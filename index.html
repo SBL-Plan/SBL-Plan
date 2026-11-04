@@ -2178,10 +2178,25 @@ body.theme-highcontrast .nav-btn.active {
       </div>
 
       <div id="forgot-form" class="hidden">
-        <p style="color:var(--muted);margin-bottom:12px;font-size:0.95rem">Enter your school email. We will send a reset link if cloud accounts are enabled.</p>
+        <p style="color:var(--muted);margin-bottom:12px;font-size:0.95rem">Enter your school email. We will help you reset your password.</p>
         <input type="email" id="forgot-email" value="@school-beyond-limitations.com" placeholder="name@school-beyond-limitations.com"
           autocomplete="off" data-lpignore="true" data-1p-ignore>
-        <button class="btn primary" onclick="resetPassword()">Send reset link</button>
+        <div id="forgot-local-fields" class="hidden" style="margin-top:4px">
+          <p style="color:var(--muted);font-size:0.9rem;margin-bottom:10px;text-align:left">Account found on this device. Choose a new password:</p>
+          <div class="password-wrap">
+            <input type="password" id="forgot-new-password" placeholder="New password" autocomplete="new-password"
+              autocorrect="off" autocapitalize="off" spellcheck="false"
+              data-lpignore="true" data-1p-ignore data-form-type="other">
+            <button type="button" class="pw-toggle" onclick="togglePassword('forgot-new-password', this)" title="Show password">👁</button>
+          </div>
+          <div class="password-wrap">
+            <input type="password" id="forgot-confirm-password" placeholder="Confirm new password" autocomplete="new-password"
+              autocorrect="off" autocapitalize="off" spellcheck="false"
+              data-lpignore="true" data-1p-ignore data-form-type="other">
+            <button type="button" class="pw-toggle" onclick="togglePassword('forgot-confirm-password', this)" title="Show password">👁</button>
+          </div>
+        </div>
+        <button class="btn primary" id="forgot-submit-btn" onclick="resetPassword()">Continue</button>
         <p class="switch"><a href="#" onclick="showLogin(); return false;">Back to log in</a></p>
       </div>
 
@@ -2482,7 +2497,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-04b';
+const APP_VERSION = '2026-11-04c';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -3676,16 +3691,6 @@ function showLogin() {
   if (typeof prefillEmailFields === 'function') prefillEmailFields();
 }
 
-function showForgotPassword() {
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-form').classList.remove('hidden');
-  prefillEmailFields();
-  const fe = document.getElementById('forgot-email');
-  if (fe && !fe.value) fe.value = '@school-beyond-limitations.com';
-}
-
-
 
 function showRegister() {
   document.getElementById('login-form').classList.add('hidden');
@@ -3710,30 +3715,125 @@ async function resetPassword() {
     toast('Enter your full school email');
     return;
   }
-  if (!firebaseReady) {
-    openModal(`
-      <h3>Password reset</h3>
-      <p style="text-align:left;line-height:1.5;color:var(--muted)">
-        Cloud accounts are not connected yet, so reset emails cannot be sent from this site.
-        <br><br>
-        <strong>What to do:</strong> ask a facilitator or parent to help set up Firebase (free),
-        or create a new account if this device never had your data.
-        <br><br>
-        Never share passwords in chat or email.
-      </p>
-      <button class="btn primary" onclick="closeModal(); showLogin()">OK</button>
-    `);
+
+  const localFields = document.getElementById('forgot-local-fields');
+  const submitBtn = document.getElementById('forgot-submit-btn');
+  const localUser = state.users && state.users[email];
+
+  // Step 2 for local accounts: user already saw the new-password fields
+  if (localFields && !localFields.classList.contains('hidden')) {
+    const p1 = (document.getElementById('forgot-new-password')?.value || '');
+    const p2 = (document.getElementById('forgot-confirm-password')?.value || '');
+    if (!p1 || p1.length < 4) {
+      toast('Use at least 4 characters for the new password');
+      return;
+    }
+    if (p1 !== p2) {
+      toast('Passwords do not match');
+      return;
+    }
+    if (!localUser) {
+      toast('Account not found on this device');
+      return;
+    }
+    localUser.password = p1;
+    save();
+    // Also try cloud reset email if signed-in provider exists (best effort)
+    if (firebaseReady && auth) {
+      try { await auth.sendPasswordResetEmail(email); } catch (e) { /* local reset already applied */ }
+    }
+    toast('Password updated! You can log in now 🔑');
+    document.getElementById('forgot-new-password').value = '';
+    document.getElementById('forgot-confirm-password').value = '';
+    localFields.classList.add('hidden');
+    if (submitBtn) submitBtn.textContent = 'Continue';
+    showLogin();
+    const loginEmail = document.getElementById('login-email');
+    if (loginEmail) loginEmail.value = email;
     return;
   }
-  try {
-    await auth.sendPasswordResetEmail(email);
-    toast('Reset email sent — check your inbox');
-    showLogin();
-  } catch (e) {
-    console.warn(e);
-    toast('Could not send reset. Check the email address.');
+
+  // Cloud mode: send Firebase reset email
+  if (firebaseReady && auth) {
+    try {
+      await auth.sendPasswordResetEmail(email);
+      openModal(`
+        <h3>Check your email 📬</h3>
+        <p style="text-align:left;line-height:1.55;color:var(--muted)">
+          If an account exists for <strong>${email.replace(/</g,'')}</strong>, a reset link is on its way.
+          <br><br>
+          Open the email, tap the link, choose a new password, then come back here to log in.
+          <br><br>
+          <span style="font-size:0.9rem">Tip: look in Spam / Junk if you do not see it in a few minutes.</span>
+        </p>
+        <button class="btn primary" onclick="closeModal(); showLogin()">Back to log in</button>
+      `);
+      toast('Reset email sent — check your inbox');
+      return;
+    } catch (e) {
+      console.warn(e);
+      const code = (e && e.code) || '';
+      if (code === 'auth/user-not-found') {
+        // Fall through to local check / helpful message
+      } else if (code === 'auth/invalid-email') {
+        toast('That email does not look valid');
+        return;
+      } else if (code === 'auth/too-many-requests') {
+        toast('Too many tries — wait a bit and try again');
+        return;
+      } else {
+        // Network / config issues: still allow local reset if possible
+        console.warn('cloud reset failed, trying local', e);
+      }
+    }
   }
+
+  // Local-only account on this device
+  if (localUser) {
+    if (localFields) localFields.classList.remove('hidden');
+    if (submitBtn) submitBtn.textContent = 'Save new password';
+    toast('Account found — set a new password below');
+    setTimeout(() => document.getElementById('forgot-new-password')?.focus(), 50);
+    return;
+  }
+
+  // Nothing we can reset
+  openModal(`
+    <h3>No account found</h3>
+    <p style="text-align:left;line-height:1.55;color:var(--muted)">
+      We could not find <strong>${email.replace(/</g,'')}</strong> on this device
+      ${firebaseReady ? 'or send a cloud reset email' : '(and cloud reset is not available here)'}.
+      <br><br>
+      <strong>Try:</strong>
+    </p>
+    <ul style="text-align:left;color:var(--muted);line-height:1.5;padding-left:18px;margin:8px 0 14px">
+      <li>Check the email spelling</li>
+      <li>Use the same browser / device you registered on</li>
+      <li>Create a new account if this is your first time here</li>
+      <li>Ask a facilitator or parent for help</li>
+    </ul>
+    <button class="btn primary" onclick="closeModal()">OK</button>
+    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal(); showRegister()">Create account</button>
+  `);
 }
+
+function showForgotPassword() {
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-form').classList.remove('hidden');
+  const localFields = document.getElementById('forgot-local-fields');
+  if (localFields) localFields.classList.add('hidden');
+  const submitBtn = document.getElementById('forgot-submit-btn');
+  if (submitBtn) submitBtn.textContent = 'Continue';
+  const np = document.getElementById('forgot-new-password');
+  const cp = document.getElementById('forgot-confirm-password');
+  if (np) np.value = '';
+  if (cp) cp.value = '';
+  prefillEmailFields();
+  const fe = document.getElementById('forgot-email');
+  if (fe && !fe.value) fe.value = '@school-beyond-limitations.com';
+}
+
 
 function toggleAdhdMode() {
   state.adhdMode = !state.adhdMode;
@@ -4330,8 +4430,7 @@ async function tryEnterMentorMode() {
 function downloadChromeExtension() {
   try {
     // Snapshot the live app as one HTML file — same idea as the browser ↓ download button
-    const doctype = '<!DOCTYPE html>
-';
+    const doctype = '<!DOCTYPE html>\n';
     const html = doctype + document.documentElement.outerHTML;
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
