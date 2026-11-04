@@ -2482,7 +2482,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-04a';
+const APP_VERSION = '2026-11-04b';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -4148,7 +4148,7 @@ function openSettingsModal() {
       <button class="btn add-btn" style="margin-top:8px;background:${notifColor}" onclick="toggleSessionNotifications()">${notifLabel}</button>
       <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you 5 minutes before and at the start of today’s sessions. Keep the planner open (or in a tab) for reliable alerts. Needs browser permission.</p>
       <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="exportProgressReport()">📄 Share progress report</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">📱 Install as Chrome app</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">⬇️ Download app</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E17055" onclick="closeModal(); openPrivacyModal();">🔒 Privacy notice</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E74C3C" onclick="deleteMyAccount()">🗑️ Delete my account</button>
       <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="logoutUser()">Log out</button>
@@ -4326,125 +4326,52 @@ async function tryEnterMentorMode() {
   return true;
 }
 
-/* ---------- Chrome extension / app install ---------- */
-async function downloadChromeExtension() {
-  toast('Preparing Chrome app…');
+/* ---------- Download app (clean single-file save) ---------- */
+function downloadChromeExtension() {
   try {
-    const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
-    const zip = new JSZip();
-
-    // Simple branded icons (canvas → PNG)
-    async function makeIcon(size) {
-      const c = document.createElement('canvas');
-      c.width = size; c.height = size;
-      const ctx = c.getContext('2d');
-      const g = ctx.createLinearGradient(0, 0, size, size);
-      g.addColorStop(0, '#FFE66D');
-      g.addColorStop(0.5, '#FF6B6B');
-      g.addColorStop(1, '#A78BFA');
-      ctx.fillStyle = g;
-      const r = size * 0.22;
-      ctx.beginPath();
-      ctx.moveTo(r, 0); ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
-      ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
-      ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
-      ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.round(size * 0.28)}px system-ui,sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('SBL', size / 2, size / 2);
-      const blob = await new Promise(res => c.toBlob(res, 'image/png'));
-      return blob;
-    }
-    const icon16 = await makeIcon(16);
-    const icon48 = await makeIcon(48);
-    const icon128 = await makeIcon(128);
-    zip.file('icons/icon16.png', icon16);
-    zip.file('icons/icon48.png', icon48);
-    zip.file('icons/icon128.png', icon128);
-
-    const manifest = {
-      manifest_version: 3,
-      name: 'SBL Plan',
-      version: '1.1.0',
-      description: 'School Beyond Limitations student planner — opens like an app',
-      icons: {
-        '16': 'icons/icon16.png',
-        '48': 'icons/icon48.png',
-        '128': 'icons/icon128.png'
-      },
-      action: {
-        default_title: 'Open SBL Plan',
-        default_icon: {
-          '16': 'icons/icon16.png',
-          '48': 'icons/icon48.png'
-        }
-      },
-      background: { service_worker: 'background.js' },
-      chrome_url_overrides: { newtab: 'index.html' },
-      permissions: ['storage'],
-      host_permissions: [
-        'https://*.firebaseapp.com/*',
-        'https://*.googleapis.com/*',
-        'https://*.firebaseio.com/*',
-        'https://www.gstatic.com/*',
-        'https://fonts.googleapis.com/*',
-        'https://fonts.gstatic.com/*',
-        'https://fonts.cdnfonts.com/*'
-      ]
-    };
-
-    const backgroundJs = `// Open the planner in its own tab when the toolbar icon is clicked
-chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL('index.html') });
-});
-`;
-
-    const readme = `SBL Plan — install as a Chrome app
-================================
-
-This package makes SBL Plan feel like an app on your computer.
-
-1. Unzip this folder (keep the folder structure).
-2. Open Chrome and go to:  chrome://extensions
-3. Turn on "Developer mode" (top right).
-4. Click "Load unpacked" and select this unzipped folder.
-5. Pin SBL Plan to the toolbar (puzzle piece → pin).
-
-How to use it like an app
-- Click the SBL Plan icon in the toolbar anytime to open the planner.
-- New Tab pages also open SBL Plan (you can remove that later if you prefer).
-- Pin the planner tab, or open it from the toolbar so it is always one click away.
-
-Tip: On Chromebooks and some desktops, after loading the extension you can
-open chrome://apps and launch SBL Plan from there when it appears.
-
-To remove New Tab override later: edit manifest.json, delete the
-"chrome_url_overrides" line, then click Reload on chrome://extensions.
-`;
-
-    // Snapshot of the live page (current HTML)
-    let html = document.documentElement.outerHTML;
-    // Avoid recursive self-download of huge base64 if any — keep as-is
-
-    zip.file('manifest.json', JSON.stringify(manifest, null, 2));
-    zip.file('background.js', backgroundJs);
-    zip.file('index.html', html);
-    zip.file('README.txt', readme);
-
-    const blob = await zip.generateAsync({ type: 'blob' });
+    // Snapshot the live app as one HTML file — same idea as the browser ↓ download button
+    const doctype = '<!DOCTYPE html>
+';
+    const html = doctype + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'sbl-plan-chrome-app.zip';
+    a.href = url;
+    a.download = 'SBL-Plan.html';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
     a.click();
-    toast('Chrome app zip ready — Load unpacked in chrome://extensions');
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Downloaded SBL-Plan.html ✓');
+    // Short, clean tip (no broken zip / CDN)
+    setTimeout(() => {
+      openModal(`
+        <h3>⬇️ App downloaded</h3>
+        <div style="text-align:left;line-height:1.5;font-size:0.95rem">
+          <p style="margin-bottom:10px"><strong>SBL-Plan.html</strong> is in your Downloads folder.</p>
+          <p style="margin-bottom:8px"><strong>On a computer</strong></p>
+          <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
+            <li>Open the file in Chrome</li>
+            <li>Star / bookmark it, or pin the tab</li>
+            <li>Use it anytime — offline works for most features</li>
+          </ol>
+          <p style="margin-bottom:8px"><strong>On a phone / tablet</strong></p>
+          <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
+            <li>Open the file in Chrome or Safari</li>
+            <li>Share → <strong>Add to Home Screen</strong></li>
+            <li>It appears with your other apps</li>
+          </ol>
+        </div>
+        <button class="btn primary" onclick="closeModal()">Got it</button>
+      `);
+    }, 400);
   } catch (e) {
     console.warn(e);
-    toast('Could not build zip — check internet (needs JSZip CDN)');
+    toast('Download failed — try again');
   }
 }
+
 
 
 
