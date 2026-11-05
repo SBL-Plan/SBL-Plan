@@ -2173,6 +2173,7 @@ body.theme-highcontrast .nav-btn.active {
         </div>
         <button class="btn primary" onclick="login()">Let's Go! 🚀</button>
         <a href="#" class="forgot-link" onclick="showForgotPassword(); return false;">Forgot password?</a>
+        <a href="#" class="forgot-link" onclick="openRecoverModal(); return false;">Recover account / backup code</a>
         <p class="switch">New here? <a href="#" onclick="showRegister()">Create account</a></p>
         <p class="switch" style="margin-top:8px;font-size:0.8rem"><button type="button" class="privacy-link" onclick="openPrivacyModal()">Privacy &amp; GDPR</button></p>
       </div>
@@ -2497,7 +2498,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-05a';
+const APP_VERSION = '2026-11-05c';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -3563,6 +3564,18 @@ function save() {
   if (firebaseReady && auth && auth.currentUser) {
     cloudSaveUserData();
   }
+  // Keep a rolling local backup for the logged-in user (for recovery codes)
+  try {
+    if (state.currentUser && typeof buildAccountSnapshot === 'function') {
+      const snap = buildAccountSnapshot(state.currentUser);
+      const vault = readRecoveryVault();
+      const last = localStorage.getItem(RECOVERY_LAST_KEY);
+      if (last && vault[last]) {
+        vault[last] = snap;
+        writeRecoveryVault(vault);
+      }
+    }
+  } catch (e) {}
   try {
     if (typeof touchStudentPresence === 'function') {
       state.lastActive = new Date().toISOString();
@@ -4363,6 +4376,8 @@ function openSettingsModal() {
     <h3>Settings ⚙️</h3>
     <div class="settings-panel" style="text-align:left">
       <button class="btn add-btn" style="margin-top:8px;background:#0984E3" onclick="closeModal(); openEditAccountModal();">👤 Edit account</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#00CEC9" onclick="closeModal(); showAccountInventory();">📋 What’s on my account</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="closeModal(); openRecoveryCodeModal();">🔑 Recovery / backup code</button>
       <button class="btn add-btn" style="margin-top:8px" onclick="toggleAdhdMode(); closeModal();">🎯 Focus mode: ${state.adhdMode ? 'ON' : 'OFF'}</button>
       <button class="btn add-btn" style="margin-top:8px;background:#A78BFA" onclick="closeModal(); openFontModal();">Aa Font: ${state.fontFamily === 'chewy' ? 'Chewy' : state.fontFamily === 'eduqld' ? 'QLD Hand' : (state.fontFamily === 'opendyslexic' || state.dyslexiaMode ? 'Easy read' : 'Clear')}</button>
       <button class="btn add-btn" style="margin-top:8px;background:var(--primary)" onclick="closeModal(); openThemeModal();">${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).emoji} Theme: ${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).label}</button>
@@ -4371,7 +4386,8 @@ function openSettingsModal() {
       <button class="btn add-btn" style="margin-top:8px;background:#00B894" onclick="testSessionReminder()">🔔 Test reminder now</button>
       <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you <strong>5 minutes before</strong> and <strong>at the start</strong> of today’s sessions (${todaySessionsWithTime} timed today · ${scheduledN} alerts scheduled). Keep a tab open (or use the Chrome app) for reliable alerts.</p>
       <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="exportProgressReport()">📄 Share progress report</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">📱 Install as Chrome app</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="installSblApp()">${(window._sblCanInstall || window.matchMedia('(display-mode: standalone)').matches) ? (window.matchMedia('(display-mode: standalone)').matches ? '✅ App installed' : '📲 Install app') : '📲 Install app'}</button>
+      <p style="font-size:0.75rem;color:var(--muted);margin:4px 0 0;line-height:1.35">One tap install — appears with your other apps. Works best when opened from the school website (https).</p>
       <button class="btn add-btn" style="margin-top:8px;background:#E17055" onclick="closeModal(); openPrivacyModal();">🔒 Privacy notice</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E74C3C" onclick="deleteMyAccount()">🗑️ Delete my account</button>
       <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="logoutUser()">Log out</button>
@@ -4549,6 +4565,198 @@ async function tryEnterMentorMode() {
   return true;
 }
 
+
+/* ---------- Clean app install (PWA) ---------- */
+window._sblDeferredInstall = null;
+window._sblCanInstall = false;
+window._sblPwaReady = false;
+
+function isStandaloneApp() {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+  } catch (e) { return false; }
+}
+
+function isSecureContextForPwa() {
+  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
+async function canvasIconDataUrl(size) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, size, size);
+  g.addColorStop(0, '#FFE66D');
+  g.addColorStop(0.5, '#FF6B6B');
+  g.addColorStop(1, '#A78BFA');
+  ctx.fillStyle = g;
+  const r = Math.max(2, size * 0.22);
+  ctx.beginPath();
+  ctx.moveTo(r, 0); ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold ' + Math.round(size * 0.28) + 'px system-ui,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SBL', size / 2, size / 2);
+  return c.toDataURL('image/png');
+}
+
+async function setupPwaInstall() {
+  if (window._sblPwaReady) return;
+  window._sblPwaReady = true;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window._sblDeferredInstall = e;
+    window._sblCanInstall = true;
+  });
+  window.addEventListener('appinstalled', () => {
+    window._sblDeferredInstall = null;
+    window._sblCanInstall = false;
+    toast('SBL Plan installed! 🎉');
+  });
+
+  // Manifest so the browser can offer Install
+  try {
+    const icon192 = await canvasIconDataUrl(192);
+    const icon512 = await canvasIconDataUrl(512);
+    const startUrl = location.href.split('#')[0] || './';
+    const manifest = {
+      name: 'SBL Plan',
+      short_name: 'SBL Plan',
+      description: 'School Beyond Limitations student planner',
+      start_url: startUrl,
+      scope: startUrl.replace(/\/[^/]*$/, '/') || './',
+      display: 'standalone',
+      orientation: 'any',
+      background_color: '#FFF8F0',
+      theme_color: '#FF6B6B',
+      icons: [
+        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'manifest';
+      document.head.appendChild(link);
+    }
+    link.href = url;
+  } catch (e) { console.warn('manifest', e); }
+
+  // Minimal service worker (helps Chrome treat it as installable on https)
+  if ('serviceWorker' in navigator && isSecureContextForPwa()) {
+    try {
+      const swCode = [
+        "self.addEventListener('install', e => { self.skipWaiting(); });",
+        "self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });",
+        "self.addEventListener('fetch', e => { /* network-first; app works online */ });"
+      ].join('\n');
+      const swBlob = new Blob([swCode], { type: 'text/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      await navigator.serviceWorker.register(swUrl, { scope: './' }).catch(() => {});
+    } catch (e) { console.warn('sw', e); }
+  }
+}
+
+async function installSblApp() {
+  if (isStandaloneApp()) {
+    openModal(`
+      <h3>✅ Already installed</h3>
+      <p style="text-align:left;color:var(--muted);line-height:1.5">SBL Plan is running as an app on this device. You can open it from your home screen or app list.</p>
+      <button class="btn primary" onclick="closeModal()">OK</button>
+    `);
+    return;
+  }
+
+  // Native install prompt (Chrome / Edge / Android)
+  if (window._sblDeferredInstall) {
+    try {
+      window._sblDeferredInstall.prompt();
+      const choice = await window._sblDeferredInstall.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        toast('Installing…');
+      } else {
+        toast('Install cancelled');
+      }
+      window._sblDeferredInstall = null;
+      window._sblCanInstall = false;
+    } catch (e) {
+      console.warn(e);
+      showInstallHelpModal();
+    }
+    return;
+  }
+
+  showInstallHelpModal();
+}
+
+function showInstallHelpModal() {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const secure = isSecureContextForPwa();
+  const fileProto = location.protocol === 'file:';
+
+  let body = '';
+  if (ios) {
+    body = `
+      <p style="margin-bottom:10px"><strong>On iPhone / iPad (cleanest way)</strong></p>
+      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
+        <li>Open SBL Plan in <strong>Safari</strong></li>
+        <li>Tap the <strong>Share</strong> button</li>
+        <li>Tap <strong>Add to Home Screen</strong></li>
+        <li>Tap <strong>Add</strong></li>
+      </ol>
+      <p style="font-size:0.9rem;color:var(--muted)">It then sits with your other apps.</p>`;
+  } else if (fileProto || !secure) {
+    body = `
+      <p style="margin-bottom:10px"><strong>Cleanest install</strong></p>
+      <p style="color:var(--muted);line-height:1.5;margin-bottom:10px">
+        Browsers only show the one-tap <strong>Install app</strong> button when SBL Plan is opened from a website
+        address starting with <strong>https://</strong> (not a downloaded file).
+      </p>
+      <p style="color:var(--muted);line-height:1.5;margin-bottom:10px">
+        <strong>Ask your school</strong> for the planner link, open it in Chrome, then:
+      </p>
+      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
+        <li>Open the menu (⋮) → <strong>Install SBL Plan</strong> / <strong>Install app</strong></li>
+        <li>Or look for the install icon in the address bar</li>
+      </ol>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">
+        On your other device it already works because it was installed from a proper app/extension setup.
+      </p>
+      <button class="btn add-btn" style="background:#636E72" onclick="downloadChromeExtension()">Advanced: Chrome extension package</button>`;
+  } else {
+    body = `
+      <p style="margin-bottom:10px"><strong>Install in one step</strong></p>
+      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
+        <li>In Chrome, open the <strong>⋮</strong> menu</li>
+        <li>Tap <strong>Install SBL Plan</strong> or <strong>Install app</strong></li>
+        <li>Confirm — it appears with your other apps</li>
+      </ol>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">
+        You can also use the install icon in the address bar when Chrome shows it.
+      </p>
+      <button class="btn add-btn" style="background:#636E72" onclick="downloadChromeExtension()">Advanced: Chrome extension package</button>`;
+  }
+
+  openModal(`
+    <h3>📲 Install SBL Plan</h3>
+    <div style="text-align:left;font-size:0.95rem">${body}</div>
+    <button class="btn primary" style="margin-top:12px" onclick="closeModal()">Got it</button>
+  `);
+}
+
+// Start PWA hooks early
+try { setupPwaInstall(); } catch (e) {}
+
 /* ---------- Install as Chrome app (extension package) ---------- */
 function loadJSZipLib() {
   return new Promise((resolve, reject) => {
@@ -4698,10 +4906,545 @@ async function downloadChromeExtension() {
 
 
 
+
+/* ========== Account inventory + recovery codes ========== */
+const RECOVERY_VAULT_KEY = 'sbl_recovery_vault_v1';
+const RECOVERY_LAST_KEY = 'sbl_recovery_last_v1';
+
+const ACCOUNT_DATA_KEYS = [
+  'tasks', 'habits', 'notes', 'classes', 'goals', 'reflections',
+  'books', 'inquiries', 'readingBook', 'topicInquiry',
+  'timezone', 'adhdMode', 'dyslexiaMode', 'fontFamily', 'theme',
+  'notificationsEnabled', 'privacyAccepted', 'calVersion',
+  'unlockedAchievements', 'unlockedAvatars', 'unlockedFonts', 'unlockedThemes',
+  'reflectionSaveCount', 'reflectionLog', 'unseenWins', 'lastActive'
+];
+
+function generateRecoveryCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  const arr = new Uint8Array(12);
+  try { crypto.getRandomValues(arr); } catch (e) {
+    for (let i = 0; i < 12; i++) arr[i] = Math.floor(Math.random() * 256);
+  }
+  for (let i = 0; i < 12; i++) out += alphabet[arr[i] % alphabet.length];
+  return out.slice(0, 4) + '-' + out.slice(4, 8) + '-' + out.slice(8, 12);
+}
+
+function readRecoveryVault() {
+  try {
+    return JSON.parse(localStorage.getItem(RECOVERY_VAULT_KEY) || '{}') || {};
+  } catch (e) { return {}; }
+}
+
+function writeRecoveryVault(vault) {
+  try { localStorage.setItem(RECOVERY_VAULT_KEY, JSON.stringify(vault)); } catch (e) {
+    console.warn('recovery vault write failed', e);
+  }
+}
+
+function buildAccountSnapshot(email) {
+  const em = (email || state.currentUser || '').toLowerCase();
+  const user = (state.users && state.users[em]) ? { ...state.users[em] } : {};
+  // Never put raw password into cloud recovery if we can avoid it — keep local only
+  const snap = {
+    version: 1,
+    email: em,
+    displayName: user.displayName || '',
+    avatar: user.avatar || '🦊',
+    points: user.points || 0,
+    created: user.created || null,
+    // password kept only in local vault for same-device restore
+    password: user.password || null,
+    tasks: state.tasks || [],
+    habits: state.habits || [],
+    notes: state.notes || [],
+    classes: state.classes || [],
+    goals: state.goals || [],
+    reflections: state.reflections || {},
+    books: state.books || [],
+    inquiries: state.inquiries || [],
+    readingBook: state.readingBook || null,
+    topicInquiry: state.topicInquiry || null,
+    timezone: state.timezone || 'CET',
+    adhdMode: !!state.adhdMode,
+    dyslexiaMode: !!state.dyslexiaMode,
+    fontFamily: state.fontFamily || 'nunito',
+    notificationsEnabled: !!state.notificationsEnabled,
+    privacyAccepted: !!state.privacyAccepted,
+    theme: state.theme || 'sunshine',
+    calVersion: state.calVersion || null,
+    unlockedAchievements: state.unlockedAchievements || [],
+    unlockedAvatars: state.unlockedAvatars || ['🦊'],
+    unlockedFonts: state.unlockedFonts || ['nunito', 'poppins', 'opendyslexic'],
+    unlockedThemes: state.unlockedThemes || ['sunshine'],
+    reflectionSaveCount: state.reflectionSaveCount || 0,
+    reflectionLog: state.reflectionLog || [],
+    unseenWins: !!state.unseenWins,
+    lastActive: state.lastActive || null,
+    savedAt: new Date().toISOString()
+  };
+  return snap;
+}
+
+function snapshotSummary(snap) {
+  if (!snap) return 'No data';
+  const n = (arr) => Array.isArray(arr) ? arr.length : 0;
+  const refN = snap.reflections ? Object.keys(snap.reflections).length : 0;
+  return [
+    n(snap.tasks) + ' tasks',
+    n(snap.habits) + ' habits',
+    n(snap.notes) + ' notes',
+    n(snap.classes) + ' sessions',
+    n(snap.goals) + ' goals',
+    refN + ' reflections',
+    n(snap.books) + ' books',
+    n(snap.inquiries) + ' inquiries',
+    (snap.points || 0) + ' stars'
+  ].join(' · ');
+}
+
+function accountInventoryLines() {
+  const u = state.users[state.currentUser] || {};
+  const refN = state.reflections ? Object.keys(state.reflections).length : 0;
+  return [
+    ['Email', state.currentUser || '—'],
+    ['Display name', u.displayName || '—'],
+    ['Avatar', u.avatar || '—'],
+    ['Stars', String(u.points || 0)],
+    ['Action steps', String((state.tasks || []).length)],
+    ['Habits', String((state.habits || []).length)],
+    ['Notes', String((state.notes || []).length)],
+    ['Sessions', String((state.classes || []).length)],
+    ['Goals', String((state.goals || []).length)],
+    ['Reflections', String(refN)],
+    ['Books', String((state.books || []).length)],
+    ['Inquiries', String((state.inquiries || []).length)],
+    ['Theme', state.theme || 'sunshine'],
+    ['Font', state.fontFamily || 'nunito'],
+    ['Timezone', state.timezone || 'CET'],
+    ['Wins unlocked', String((state.unlockedAchievements || []).length)],
+    ['Cloud', (typeof firebaseReady !== 'undefined' && firebaseReady && auth && auth.currentUser) ? 'signed in' : 'not signed in to cloud']
+  ];
+}
+
+function showAccountInventory() {
+  const rows = accountInventoryLines().map(([k, v]) =>
+    `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--border-soft,#eee)"><span style="color:var(--muted)">${k}</span><strong style="text-align:right">${String(v).replace(/</g,'&lt;')}</strong></div>`
+  ).join('');
+  openModal(`
+    <h3>What’s on my account 📋</h3>
+    <div style="text-align:left;font-size:0.92rem;max-height:55vh;overflow-y:auto">${rows}</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:10px;text-align:left">This is everything recovery codes back up.</p>
+    <button class="btn primary" onclick="closeModal()">OK</button>
+    <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="closeModal(); openRecoveryCodeModal();">🔑 Get recovery code</button>
+  `);
+}
+
+async function saveRecoverySnapshot(code, snap) {
+  const vault = readRecoveryVault();
+  vault[code] = snap;
+  writeRecoveryVault(vault);
+  try { localStorage.setItem(RECOVERY_LAST_KEY, code); } catch (e) {}
+  // Cloud copy (readable by code) — best-effort
+  if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
+    try {
+      const cloudSnap = { ...snap };
+      delete cloudSnap.password; // never store password in Firestore recovery
+      await db.collection('recoveryCodes').doc(code).set({
+        code,
+        email: snap.email || '',
+        savedAt: snap.savedAt,
+        summary: snapshotSummary(snap),
+        data: cloudSnap
+      }, { merge: true });
+    } catch (e) {
+      console.warn('cloud recovery save', e);
+    }
+  }
+  return code;
+}
+
+async function createRecoveryCodeForCurrentUser() {
+  if (!state.currentUser) {
+    toast('Log in first');
+    return null;
+  }
+  const code = generateRecoveryCode();
+  const snap = buildAccountSnapshot(state.currentUser);
+  await saveRecoverySnapshot(code, snap);
+  return code;
+}
+
+function openRecoveryCodeModal() {
+  if (!state.currentUser) {
+    openRecoverModal();
+    return;
+  }
+  openModal(`
+    <h3>🔑 Recovery / backup code</h3>
+    <p style="text-align:left;color:var(--muted);line-height:1.5;margin-bottom:12px">
+      Write this code down. Anyone with the code can restore <strong>all</strong> your planner data
+      (tasks, habits, sessions, notes, books, goals, stars, settings…).
+    </p>
+    <button class="btn primary" onclick="issueRecoveryCode()">Create / refresh my code</button>
+    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Cancel</button>
+  `);
+}
+
+async function issueRecoveryCode() {
+  toast('Saving backup…');
+  const code = await createRecoveryCodeForCurrentUser();
+  if (!code) return;
+  openModal(`
+    <h3>🔑 Your recovery code</h3>
+    <p style="font-size:1.6rem;font-weight:800;letter-spacing:0.08em;margin:16px 0;user-select:all">${code}</p>
+    <p style="text-align:left;color:var(--muted);font-size:0.9rem;line-height:1.45">
+      Summary: ${snapshotSummary(buildAccountSnapshot(state.currentUser))}
+      <br><br>
+      Keep this somewhere safe (parent, paper, password manager).
+      On the login screen use <strong>Recover account / backup code</strong> and enter this code.
+    </p>
+    <button class="btn primary" onclick="navigator.clipboard && navigator.clipboard.writeText('${code}').then(()=>toast('Copied!')).catch(()=>{});">Copy code</button>
+    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">I’ve saved it</button>
+  `);
+}
+
+function openRecoverModal() {
+  const vault = readRecoveryVault();
+  const codes = Object.keys(vault);
+  const localHint = codes.length
+    ? `<p style="font-size:0.85rem;color:var(--muted);margin:8px 0">This device has ${codes.length} saved backup(s).</p>`
+    : `<p style="font-size:0.85rem;color:var(--muted);margin:8px 0">No recovery codes stored in this browser yet.</p>`;
+  openModal(`
+    <h3>Recover account</h3>
+    <div style="text-align:left">
+      <p style="color:var(--muted);line-height:1.45;margin-bottom:10px">
+        Try these in order. We’ll show exactly what can be restored.
+      </p>
+      <button class="btn add-btn" style="background:#0984E3" onclick="scanDeviceForAccountData()">1 · Scan this device</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="showEnterRecoveryCode()">2 · Enter recovery code</button>
+      ${localHint}
+      <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); showLogin();">Back to log in</button>
+    </div>
+  `);
+}
+
+function scanDeviceForAccountData() {
+  const findings = [];
+  // 1) Current in-memory / localStorage main store
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      const emails = data.users ? Object.keys(data.users) : [];
+      findings.push({
+        source: 'Main app storage',
+        email: data.currentUser || (emails[0] || null),
+        emails,
+        counts: {
+          tasks: (data.tasks || []).length,
+          habits: (data.habits || []).length,
+          notes: (data.notes || []).length,
+          classes: (data.classes || []).length,
+          goals: (data.goals || []).length,
+          books: (data.books || []).length,
+          inquiries: (data.inquiries || []).length,
+          reflections: data.reflections ? Object.keys(data.reflections).length : 0,
+          users: emails.length
+        },
+        raw: data
+      });
+    }
+  } catch (e) {}
+
+  // 2) Recovery vault snapshots
+  const vault = readRecoveryVault();
+  Object.keys(vault).forEach(code => {
+    const snap = vault[code];
+    if (!snap) return;
+    findings.push({
+      source: 'Recovery code ' + code,
+      code,
+      email: snap.email || null,
+      counts: {
+        tasks: (snap.tasks || []).length,
+        habits: (snap.habits || []).length,
+        notes: (snap.notes || []).length,
+        classes: (snap.classes || []).length,
+        goals: (snap.goals || []).length,
+        books: (snap.books || []).length,
+        inquiries: (snap.inquiries || []).length,
+        reflections: snap.reflections ? Object.keys(snap.reflections).length : 0,
+        stars: snap.points || 0
+      },
+      snap
+    });
+  });
+
+  if (!findings.length) {
+    openModal(`
+      <h3>Scan results</h3>
+      <p style="text-align:left;color:var(--muted);line-height:1.5">
+        Nothing recoverable was found in this browser.
+        <br><br>
+        If the account was deleted here, main data was cleared.
+        A recovery code from <em>before</em> delete would be needed (or data on another device / Firebase).
+      </p>
+      <button class="btn primary" onclick="showEnterRecoveryCode()">Try a recovery code</button>
+      <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">OK</button>
+    `);
+    return;
+  }
+
+  const cards = findings.map((f, i) => {
+    const c = f.counts || {};
+    const bits = [
+      c.tasks != null ? c.tasks + ' tasks' : null,
+      c.habits != null ? c.habits + ' habits' : null,
+      c.notes != null ? c.notes + ' notes' : null,
+      c.classes != null ? c.classes + ' sessions' : null,
+      c.goals != null ? c.goals + ' goals' : null,
+      c.books != null ? c.books + ' books' : null,
+      c.reflections != null ? c.reflections + ' reflections' : null,
+      c.stars != null ? c.stars + ' stars' : null
+    ].filter(Boolean).join(' · ');
+    const canRestore = !!(f.snap || f.raw);
+    return `<div class="card" style="margin-bottom:10px;text-align:left">
+      <div class="card-title" style="font-size:1rem">${f.source.replace(/</g,'&lt;')}</div>
+      <div class="card-meta">${f.email ? 'Email: ' + String(f.email).replace(/</g,'&lt;') : 'No email on snapshot'}</div>
+      <div class="card-meta">${bits || 'Empty'}</div>
+      ${canRestore ? `<button class="small-btn" style="margin-top:8px" onclick="restoreFromScanIndex(${i})">Restore this</button>` : ''}
+    </div>`;
+  }).join('');
+
+  // stash findings for restore buttons
+  window._sblScanFindings = findings;
+
+  openModal(`
+    <h3>Scan results</h3>
+    <div style="max-height:55vh;overflow-y:auto">${cards}</div>
+    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">Close</button>
+  `);
+}
+
+function restoreFromScanIndex(i) {
+  const findings = window._sblScanFindings || [];
+  const f = findings[i];
+  if (!f) return;
+  if (f.snap) {
+    applyRecoverySnapshot(f.snap, f.code || null);
+    return;
+  }
+  if (f.raw) {
+    // Rebuild snapshot from main storage residue
+    const data = f.raw;
+    const email = (data.currentUser || (data.users && Object.keys(data.users)[0]) || '').toLowerCase();
+    if (!email) { toast('No account email in this data'); return; }
+    // Merge residue into state-shaped snapshot
+    const user = (data.users && data.users[email]) || {};
+    const snap = {
+      version: 1,
+      email,
+      displayName: user.displayName || email.split('@')[0],
+      avatar: user.avatar || '🦊',
+      points: user.points || 0,
+      password: user.password || null,
+      tasks: data.tasks || [],
+      habits: data.habits || [],
+      notes: data.notes || [],
+      classes: data.classes || [],
+      goals: data.goals || [],
+      reflections: data.reflections || {},
+      books: data.books || [],
+      inquiries: data.inquiries || [],
+      readingBook: data.readingBook || null,
+      topicInquiry: data.topicInquiry || null,
+      timezone: data.timezone || 'CET',
+      adhdMode: !!data.adhdMode,
+      dyslexiaMode: !!data.dyslexiaMode,
+      fontFamily: data.fontFamily || 'nunito',
+      notificationsEnabled: !!data.notificationsEnabled,
+      privacyAccepted: !!data.privacyAccepted,
+      theme: data.theme || 'sunshine',
+      calVersion: data.calVersion || null,
+      unlockedAchievements: data.unlockedAchievements || [],
+      unlockedAvatars: data.unlockedAvatars || ['🦊'],
+      unlockedFonts: data.unlockedFonts || ['nunito', 'poppins', 'opendyslexic'],
+      unlockedThemes: data.unlockedThemes || ['sunshine'],
+      reflectionSaveCount: data.reflectionSaveCount || 0,
+      reflectionLog: data.reflectionLog || [],
+      unseenWins: !!data.unseenWins,
+      savedAt: new Date().toISOString()
+    };
+    applyRecoverySnapshot(snap, null);
+  }
+}
+
+function showEnterRecoveryCode() {
+  openModal(`
+    <h3>Enter recovery code</h3>
+    <p style="text-align:left;color:var(--muted);margin-bottom:10px;font-size:0.9rem">Format like <strong>ABCD-EFGH-IJKL</strong></p>
+    <input type="text" id="recover-code-input" placeholder="XXXX-XXXX-XXXX" autocomplete="off"
+      style="text-transform:uppercase;letter-spacing:0.06em;font-weight:700">
+    <button class="btn primary" onclick="restoreWithRecoveryCode()">Restore everything</button>
+    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="openRecoverModal()">Back</button>
+  `);
+}
+
+async function restoreWithRecoveryCode() {
+  const raw = (document.getElementById('recover-code-input')?.value || '').trim().toUpperCase();
+  const code = raw.replace(/\s+/g, '');
+  if (!code || code.length < 8) {
+    toast('Enter a full recovery code');
+    return;
+  }
+  toast('Looking up backup…');
+  // Local vault first
+  const vault = readRecoveryVault();
+  let snap = vault[code] || null;
+  // Cloud
+  if (!snap && typeof firebaseReady !== 'undefined' && firebaseReady && db) {
+    try {
+      const doc = await db.collection('recoveryCodes').doc(code).get();
+      if (doc.exists) {
+        const d = doc.data();
+        snap = d.data || d;
+        if (snap && !snap.email && d.email) snap.email = d.email;
+      }
+    } catch (e) {
+      console.warn(e);
+      toast('Cloud lookup failed — trying local only');
+    }
+  }
+  // Also try without dashes normalization
+  if (!snap) {
+    const compact = code.replace(/-/g, '');
+    Object.keys(vault).forEach(k => {
+      if (k.replace(/-/g, '') === compact) snap = vault[k];
+    });
+  }
+  if (!snap) {
+    openModal(`
+      <h3>Code not found</h3>
+      <p style="text-align:left;color:var(--muted);line-height:1.5">
+        No backup matched <strong>${code.replace(/</g,'')}</strong> on this device or in the cloud.
+        <br><br>
+        Codes only exist if they were created <em>before</em> the account was deleted.
+      </p>
+      <button class="btn primary" onclick="scanDeviceForAccountData()">Scan this device instead</button>
+      <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">OK</button>
+    `);
+    return;
+  }
+  applyRecoverySnapshot(snap, code);
+}
+
+function applyRecoverySnapshot(snap, code) {
+  if (!snap || !snap.email) {
+    toast('Backup is missing an email');
+    return;
+  }
+  const email = String(snap.email).toLowerCase();
+  const summary = snapshotSummary(snap);
+  openModal(`
+    <h3>Restore this backup?</h3>
+    <p style="text-align:left;line-height:1.5;color:var(--muted)">
+      <strong>${email.replace(/</g,'')}</strong><br>
+      ${summary.replace(/</g,'')}<br>
+      Saved: ${snap.savedAt ? String(snap.savedAt).replace('T',' ').slice(0,19) : 'unknown'}
+      ${code ? '<br>Code: ' + code : ''}
+    </p>
+    <p style="text-align:left;font-size:0.85rem;color:var(--muted)">This replaces planner data on this device for that account.</p>
+    <button class="btn primary" onclick="confirmApplyRecoverySnapshot()">Yes, restore everything</button>
+    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Cancel</button>
+  `);
+  window._sblPendingRestore = { snap, code };
+}
+
+function confirmApplyRecoverySnapshot() {
+  const pending = window._sblPendingRestore;
+  if (!pending || !pending.snap) return;
+  const snap = pending.snap;
+  const email = String(snap.email).toLowerCase();
+
+  if (!state.users) state.users = {};
+  state.users[email] = {
+    username: email,
+    displayName: snap.displayName || email.split('@')[0],
+    avatar: snap.avatar || '🦊',
+    points: snap.points || 0,
+    created: snap.created || todayStr(),
+    privacyAcceptedAt: new Date().toISOString()
+  };
+  if (snap.password) state.users[email].password = snap.password;
+
+  state.currentUser = email;
+  state.tasks = Array.isArray(snap.tasks) ? snap.tasks : [];
+  state.habits = Array.isArray(snap.habits) ? snap.habits : [];
+  state.notes = Array.isArray(snap.notes) ? snap.notes : [];
+  state.classes = Array.isArray(snap.classes) ? snap.classes : [];
+  state.goals = Array.isArray(snap.goals) ? snap.goals : [];
+  state.reflections = snap.reflections && typeof snap.reflections === 'object' ? snap.reflections : {};
+  state.books = Array.isArray(snap.books) ? snap.books : [];
+  state.inquiries = Array.isArray(snap.inquiries) ? snap.inquiries : [];
+  state.readingBook = snap.readingBook || null;
+  state.topicInquiry = snap.topicInquiry || null;
+  state.timezone = snap.timezone || 'CET';
+  state.adhdMode = !!snap.adhdMode;
+  state.dyslexiaMode = !!snap.dyslexiaMode;
+  state.fontFamily = snap.fontFamily || 'nunito';
+  state.notificationsEnabled = !!snap.notificationsEnabled;
+  state.privacyAccepted = true;
+  state.theme = snap.theme || 'sunshine';
+  if (snap.calVersion) state.calVersion = snap.calVersion;
+  state.unlockedAchievements = Array.isArray(snap.unlockedAchievements) ? snap.unlockedAchievements : [];
+  state.unlockedAvatars = Array.isArray(snap.unlockedAvatars) ? snap.unlockedAvatars : ['🦊'];
+  state.unlockedFonts = Array.isArray(snap.unlockedFonts) ? snap.unlockedFonts : ['nunito', 'poppins', 'opendyslexic'];
+  state.unlockedThemes = Array.isArray(snap.unlockedThemes) ? snap.unlockedThemes : ['sunshine'];
+  state.reflectionSaveCount = snap.reflectionSaveCount || 0;
+  state.reflectionLog = Array.isArray(snap.reflectionLog) ? snap.reflectionLog : [];
+  state.unseenWins = !!snap.unseenWins;
+
+  save();
+  if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
+  if (typeof applyA11yModes === 'function') applyA11yModes();
+  if (typeof ensureSchoolCalendar === 'function') ensureSchoolCalendar();
+
+  // Try to push to cloud if signed in as same email later
+  try {
+    if (typeof firebaseReady !== 'undefined' && firebaseReady && auth && auth.currentUser
+      && (auth.currentUser.email || '').toLowerCase() === email) {
+      cloudSaveUserData();
+    }
+  } catch (e) {}
+
+  closeModal();
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').classList.add('active');
+  document.getElementById('app-screen').style.display = 'block';
+  if (typeof renderAll === 'function') renderAll();
+  toast('Account restored 🔑');
+  window._sblPendingRestore = null;
+}
+
+
 async function deleteMyAccount() {
-  if (!confirm('Delete your account and all planner data? This cannot be undone.')) return;
-  if (!confirm('Are you sure? Everything will be removed.')) return;
+  if (!confirm('Delete your account and all planner data?')) return;
+  if (!confirm('Last chance: we will create a recovery code first. Write it down!')) return;
   const email = state.currentUser;
+  let code = null;
+  try {
+    code = await createRecoveryCodeForCurrentUser();
+  } catch (e) {
+    console.warn(e);
+  }
+  if (code) {
+    alert('SAVE THIS RECOVERY CODE before delete continues:\n\n' + code + '\n\n' + snapshotSummary(buildAccountSnapshot(email)));
+  } else {
+    if (!confirm('Could not create a recovery code. Delete anyway? Data may be unrecoverable.')) return;
+  }
   try {
     if (firebaseReady && auth.currentUser) {
       if (db) await db.collection('users').doc(auth.currentUser.uid).delete().catch(() => {});
@@ -4716,6 +5459,16 @@ async function deleteMyAccount() {
   state.habits = [];
   state.notes = [];
   state.classes = [];
+  state.goals = [];
+  state.reflections = {};
+  state.books = [];
+  state.inquiries = [];
+  state.readingBook = null;
+  state.topicInquiry = null;
+  state.unlockedAchievements = [];
+  state.reflectionSaveCount = 0;
+  state.reflectionLog = [];
+  state.unseenWins = false;
   save();
   closeModal();
   document.getElementById('app-screen').classList.remove('active');
@@ -4723,7 +5476,7 @@ async function deleteMyAccount() {
   document.getElementById('auth-screen').classList.add('active');
   document.getElementById('auth-screen').style.display = '';
   showLogin();
-  toast('Account deleted');
+  toast(code ? ('Account deleted · recovery code ' + code) : 'Account deleted');
 }
 
 function logoutUser() {
