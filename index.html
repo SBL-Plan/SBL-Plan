@@ -2497,7 +2497,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-04c';
+const APP_VERSION = '2026-11-05a';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -3435,8 +3435,39 @@ async function enableSessionNotifications() {
   state.notificationsEnabled = true;
   save();
   scheduleSessionNotifications();
-  toast('Session reminders on 🔔');
+  // Immediate confirmation so the student knows the system works
+  showSessionNotification(
+    '🔔 Session reminders on',
+    'You will get alerts 5 min before and at the start of today’s sessions. Keep SBL Plan open in a tab (or use the Chrome app).',
+    'sbl-reminders-on'
+  );
+  const n = _sessionNotifTimers.length;
+  toast(n ? ('Session reminders on · ' + n + ' alert(s) scheduled 🔔') : 'Session reminders on · no timed sessions left today 🔔');
   return true;
+}
+
+function testSessionReminder() {
+  if (!notificationsSupported()) {
+    toast('Notifications not supported in this browser');
+    return;
+  }
+  if (Notification.permission !== 'granted') {
+    // Request then test
+    enableSessionNotifications().then(ok => {
+      if (ok) {
+        showSessionNotification('🔔 Test reminder', 'If you see this, session reminders work on this device!', 'sbl-test');
+        toast('Test notification sent');
+      }
+    });
+    return;
+  }
+  if (!state.notificationsEnabled) {
+    state.notificationsEnabled = true;
+    save();
+    scheduleSessionNotifications();
+  }
+  showSessionNotification('🔔 Test reminder', 'If you see this, session reminders work on this device!', 'sbl-test');
+  toast('Test notification sent — check your screen');
 }
 
 function disableSessionNotifications() {
@@ -3465,23 +3496,24 @@ function initSessionNotifications() {
   if (state.notificationsEnabled && Notification.permission === 'granted') {
     scheduleSessionNotifications();
   } else if (state.notificationsEnabled && Notification.permission === 'denied') {
-    state.notificationsEnabled = false;
+    // keep preference but cannot fire until user re-allows in browser settings
   }
-  if (_sessionNotifInitDone) return;
-  _sessionNotifInitDone = true;
-  // Reschedule when tab becomes visible again (timers can be throttled in background)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && state.notificationsEnabled) {
-      scheduleSessionNotifications();
-    }
-  });
-  // Midnight rollover — reschedule for the new day
-  const now = new Date();
-  const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 1, 0);
-  setTimeout(() => {
-    scheduleSessionNotifications();
-    setInterval(scheduleSessionNotifications, 24 * 60 * 60 * 1000);
-  }, Math.max(1000, nextMidnight - now));
+  // Re-schedule when the tab wakes (browsers throttle timers in background)
+  if (!window._sblNotifVisBound) {
+    window._sblNotifVisBound = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state.notificationsEnabled) {
+        scheduleSessionNotifications();
+      }
+    });
+    window.addEventListener('focus', () => {
+      if (state.notificationsEnabled) scheduleSessionNotifications();
+    });
+    // Midnight rollover + periodic refresh
+    setInterval(() => {
+      if (state.notificationsEnabled) scheduleSessionNotifications();
+    }, 15 * 60 * 1000);
+  }
 }
 
 
@@ -4224,6 +4256,91 @@ function setTheme(name) {
   openThemeModal();
 }
 
+
+function openEditAccountModal() {
+  const user = state.users[state.currentUser] || {};
+  const email = state.currentUser || '';
+  const name = (user.displayName || '').replace(/"/g, '&quot;');
+  const hasLocalPw = !!(user.password);
+  const cloud = !!(firebaseReady && auth && auth.currentUser);
+  openModal(`
+    <h3>Edit account 👤</h3>
+    <div style="text-align:left">
+      <label>School email</label>
+      <input type="text" value="${email.replace(/"/g,'&quot;')}" disabled style="opacity:0.75">
+      <label>Display name</label>
+      <input type="text" id="edit-display-name" value="${name}" placeholder="Your name" maxlength="40">
+      <p style="font-size:0.85rem;color:var(--muted);margin:8px 0 4px">Change avatar from your profile picture in the header.</p>
+      <hr style="border:none;border-top:1px solid var(--border-soft,#eee);margin:14px 0">
+      <label>New password ${cloud ? '(updates cloud login too)' : '(this device)'}</label>
+      <div class="password-wrap">
+        <input type="password" id="edit-new-password" placeholder="Leave blank to keep current" autocomplete="new-password"
+          data-lpignore="true" data-1p-ignore>
+        <button type="button" class="pw-toggle" onclick="togglePassword('edit-new-password', this)" title="Show password">👁</button>
+      </div>
+      <div class="password-wrap">
+        <input type="password" id="edit-confirm-password" placeholder="Confirm new password" autocomplete="new-password"
+          data-lpignore="true" data-1p-ignore>
+        <button type="button" class="pw-toggle" onclick="togglePassword('edit-confirm-password', this)" title="Show password">👁</button>
+      </div>
+      ${hasLocalPw ? `<label>Current password (needed to change password on this device)</label>
+      <div class="password-wrap">
+        <input type="password" id="edit-current-password" placeholder="Current password" autocomplete="current-password"
+          data-lpignore="true" data-1p-ignore>
+        <button type="button" class="pw-toggle" onclick="togglePassword('edit-current-password', this)" title="Show password">👁</button>
+      </div>` : ''}
+      <button class="btn primary" onclick="saveAccountEdits()">Save changes</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); openAvatarModal();">Change avatar ✨</button>
+    </div>
+  `);
+}
+
+async function saveAccountEdits() {
+  const user = state.users[state.currentUser];
+  if (!user) { toast('Not signed in'); return; }
+  const nameEl = document.getElementById('edit-display-name');
+  const newName = (nameEl?.value || '').trim();
+  if (!newName) { toast('Please enter a display name'); return; }
+  user.displayName = newName;
+
+  const p1 = (document.getElementById('edit-new-password')?.value || '');
+  const p2 = (document.getElementById('edit-confirm-password')?.value || '');
+  if (p1 || p2) {
+    if (p1.length < 4) { toast('New password needs at least 4 characters'); return; }
+    if (p1 !== p2) { toast('New passwords do not match'); return; }
+    if (user.password) {
+      const cur = (document.getElementById('edit-current-password')?.value || '');
+      if (cur !== user.password) { toast('Current password is wrong'); return; }
+    }
+    user.password = p1;
+    // Cloud password update when possible
+    if (firebaseReady && auth && auth.currentUser) {
+      try {
+        await auth.currentUser.updatePassword(p1);
+      } catch (e) {
+        console.warn(e);
+        const code = e && e.code;
+        if (code === 'auth/requires-recent-login') {
+          toast('Password saved on this device. For cloud: log out, log in, then change password again.');
+        } else if (code === 'auth/weak-password') {
+          toast('Cloud rejected password — use a stronger one');
+          return;
+        } else {
+          toast('Local password updated (cloud update failed)');
+        }
+      }
+    }
+  }
+
+  if (firebaseReady && auth && auth.currentUser) {
+    try { await auth.currentUser.updateProfile({ displayName: newName }); } catch (e) {}
+  }
+  save();
+  renderHeader();
+  closeModal();
+  toast('Account updated ✓');
+}
+
 function openSettingsModal() {
   const notifOk = notificationsSupported();
   const perm = notificationPermission();
@@ -4238,17 +4355,23 @@ function openSettingsModal() {
     notifLabel = 'Session reminders: blocked in browser';
     notifColor = '#E74C3C';
   }
+  const scheduledN = (typeof _sessionNotifTimers !== 'undefined' && _sessionNotifTimers) ? _sessionNotifTimers.length : 0;
+  const todaySessionsWithTime = (typeof sessionsForDate === 'function')
+    ? sessionsForDate(todayStr()).filter(c => c.time).length
+    : 0;
   openModal(`
     <h3>Settings ⚙️</h3>
     <div class="settings-panel" style="text-align:left">
+      <button class="btn add-btn" style="margin-top:8px;background:#0984E3" onclick="closeModal(); openEditAccountModal();">👤 Edit account</button>
       <button class="btn add-btn" style="margin-top:8px" onclick="toggleAdhdMode(); closeModal();">🎯 Focus mode: ${state.adhdMode ? 'ON' : 'OFF'}</button>
       <button class="btn add-btn" style="margin-top:8px;background:#A78BFA" onclick="closeModal(); openFontModal();">Aa Font: ${state.fontFamily === 'chewy' ? 'Chewy' : state.fontFamily === 'eduqld' ? 'QLD Hand' : (state.fontFamily === 'opendyslexic' || state.dyslexiaMode ? 'Easy read' : 'Clear')}</button>
       <button class="btn add-btn" style="margin-top:8px;background:var(--primary)" onclick="closeModal(); openThemeModal();">${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).emoji} Theme: ${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).label}</button>
       <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); openTimezoneModal();">🌍 Timezone</button>
       <button class="btn add-btn" style="margin-top:8px;background:${notifColor}" onclick="toggleSessionNotifications()">${notifLabel}</button>
-      <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you 5 minutes before and at the start of today’s sessions. Keep the planner open (or in a tab) for reliable alerts. Needs browser permission.</p>
+      <button class="btn add-btn" style="margin-top:8px;background:#00B894" onclick="testSessionReminder()">🔔 Test reminder now</button>
+      <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you <strong>5 minutes before</strong> and <strong>at the start</strong> of today’s sessions (${todaySessionsWithTime} timed today · ${scheduledN} alerts scheduled). Keep a tab open (or use the Chrome app) for reliable alerts.</p>
       <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="exportProgressReport()">📄 Share progress report</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">⬇️ Download app</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">📱 Install as Chrome app</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E17055" onclick="closeModal(); openPrivacyModal();">🔒 Privacy notice</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E74C3C" onclick="deleteMyAccount()">🗑️ Delete my account</button>
       <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="logoutUser()">Log out</button>
@@ -4426,50 +4549,150 @@ async function tryEnterMentorMode() {
   return true;
 }
 
-/* ---------- Download app (clean single-file save) ---------- */
-function downloadChromeExtension() {
+/* ---------- Install as Chrome app (extension package) ---------- */
+function loadJSZipLib() {
+  return new Promise((resolve, reject) => {
+    if (window.JSZip) { resolve(window.JSZip); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+    s.onload = () => window.JSZip ? resolve(window.JSZip) : reject(new Error('JSZip missing'));
+    s.onerror = () => reject(new Error('Could not load JSZip'));
+    document.head.appendChild(s);
+  });
+}
+
+async function makeAppIconBlob(size) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, size, size);
+  g.addColorStop(0, '#FFE66D');
+  g.addColorStop(0.5, '#FF6B6B');
+  g.addColorStop(1, '#A78BFA');
+  ctx.fillStyle = g;
+  const r = Math.max(2, size * 0.22);
+  ctx.beginPath();
+  ctx.moveTo(r, 0); ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold ' + Math.round(size * 0.28) + 'px system-ui,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SBL', size / 2, size / 2);
+  return await new Promise(res => c.toBlob(res, 'image/png'));
+}
+
+async function downloadChromeExtension() {
+  toast('Preparing Chrome app…');
   try {
-    // Snapshot the live app as one HTML file — same idea as the browser ↓ download button
-    const doctype = '<!DOCTYPE html>\n';
-    const html = doctype + document.documentElement.outerHTML;
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
+    const JSZip = await loadJSZipLib();
+    const zip = new JSZip();
+    const [icon16, icon48, icon128] = await Promise.all([
+      makeAppIconBlob(16), makeAppIconBlob(48), makeAppIconBlob(128)
+    ]);
+    zip.file('icons/icon16.png', icon16);
+    zip.file('icons/icon48.png', icon48);
+    zip.file('icons/icon128.png', icon128);
+
+    const manifest = {
+      manifest_version: 3,
+      name: 'SBL Plan',
+      version: '1.2.0',
+      description: 'School Beyond Limitations student planner — opens like an app',
+      icons: {
+        '16': 'icons/icon16.png',
+        '48': 'icons/icon48.png',
+        '128': 'icons/icon128.png'
+      },
+      action: {
+        default_title: 'Open SBL Plan',
+        default_icon: {
+          '16': 'icons/icon16.png',
+          '48': 'icons/icon48.png'
+        }
+      },
+      background: { service_worker: 'background.js' },
+      chrome_url_overrides: { newtab: 'index.html' },
+      permissions: ['storage', 'notifications'],
+      host_permissions: [
+        'https://*.firebaseapp.com/*',
+        'https://*.googleapis.com/*',
+        'https://*.firebaseio.com/*',
+        'https://www.gstatic.com/*',
+        'https://fonts.googleapis.com/*',
+        'https://fonts.gstatic.com/*',
+        'https://fonts.cdnfonts.com/*',
+        'https://cdn.jsdelivr.net/*'
+      ]
+    };
+
+    const backgroundJs = [
+      'chrome.action.onClicked.addListener(() => {',
+      '  chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });',
+      '});'
+    ].join('\n');
+
+    const readme = [
+      'SBL Plan — install as a Chrome app',
+      '================================',
+      '',
+      '1. Unzip this folder (keep the folder structure).',
+      '2. Open Chrome → chrome://extensions',
+      '3. Turn ON "Developer mode" (top right).',
+      '4. Click "Load unpacked" → select this unzipped folder.',
+      '5. Pin SBL Plan (puzzle icon → pin).',
+      '',
+      'How to use it like an app',
+      '- Click the SBL Plan toolbar icon anytime to open the planner.',
+      '- New Tab also opens SBL Plan (optional — see below).',
+      '- Session reminders work best with the planner open or pinned.',
+      '',
+      'To remove New Tab override:',
+      'Edit manifest.json, delete the "chrome_url_overrides" line,',
+      'then click Reload on chrome://extensions.'
+    ].join('\n');
+
+    // Snapshot of the live planner
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+    zip.file('background.js', backgroundJs);
+    zip.file('index.html', html);
+    zip.file('README.txt', readme);
+
+    const blob = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'SBL-Plan.html';
-    a.rel = 'noopener';
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sbl-plan-chrome-app.zip';
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-    toast('Downloaded SBL-Plan.html ✓');
-    // Short, clean tip (no broken zip / CDN)
-    setTimeout(() => {
-      openModal(`
-        <h3>⬇️ App downloaded</h3>
-        <div style="text-align:left;line-height:1.5;font-size:0.95rem">
-          <p style="margin-bottom:10px"><strong>SBL-Plan.html</strong> is in your Downloads folder.</p>
-          <p style="margin-bottom:8px"><strong>On a computer</strong></p>
-          <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
-            <li>Open the file in Chrome</li>
-            <li>Star / bookmark it, or pin the tab</li>
-            <li>Use it anytime — offline works for most features</li>
-          </ol>
-          <p style="margin-bottom:8px"><strong>On a phone / tablet</strong></p>
-          <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
-            <li>Open the file in Chrome or Safari</li>
-            <li>Share → <strong>Add to Home Screen</strong></li>
-            <li>It appears with your other apps</li>
-          </ol>
-        </div>
-        <button class="btn primary" onclick="closeModal()">Got it</button>
-      `);
-    }, 400);
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+
+    openModal(`
+      <h3>📱 Chrome app ready</h3>
+      <div style="text-align:left;line-height:1.5;font-size:0.95rem">
+        <p style="margin-bottom:10px"><strong>sbl-plan-chrome-app.zip</strong> downloaded.</p>
+        <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
+          <li>Unzip the folder</li>
+          <li>Open <strong>chrome://extensions</strong></li>
+          <li>Turn on <strong>Developer mode</strong></li>
+          <li><strong>Load unpacked</strong> → choose the folder</li>
+          <li>Pin the SBL Plan icon</li>
+        </ol>
+        <p style="font-size:0.85rem;color:var(--muted)">Same method as on your other device. This is a real Chrome extension app — not a plain HTML file.</p>
+      </div>
+      <button class="btn primary" onclick="closeModal()">Got it</button>
+    `);
+    toast('Chrome app zip downloaded');
   } catch (e) {
     console.warn(e);
-    toast('Download failed — try again');
+    toast('Could not build app package — check internet and try again');
   }
 }
+
 
 
 
