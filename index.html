@@ -9,12 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Edu+QLD+Hand:wght@400..700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
   <meta name="description" content="SBL Plan – student planner for School Beyond Limitations. Privacy-friendly.">
-  <meta name="theme-color" content="#FF6B6B">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SBL Plan">
-  <meta name="application-name" content="SBL Plan">
   <style>
 :root {
   --bg: #FFF8F0;
@@ -2173,31 +2167,15 @@ body.theme-highcontrast .nav-btn.active {
         </div>
         <button class="btn primary" onclick="login()">Let's Go! 🚀</button>
         <a href="#" class="forgot-link" onclick="showForgotPassword(); return false;">Forgot password?</a>
-        <a href="#" class="forgot-link" onclick="openRecoverModal(); return false;">Recover account / backup code</a>
         <p class="switch">New here? <a href="#" onclick="showRegister()">Create account</a></p>
         <p class="switch" style="margin-top:8px;font-size:0.8rem"><button type="button" class="privacy-link" onclick="openPrivacyModal()">Privacy &amp; GDPR</button></p>
       </div>
 
       <div id="forgot-form" class="hidden">
-        <p style="color:var(--muted);margin-bottom:12px;font-size:0.95rem">Enter your school email. We will help you reset your password.</p>
+        <p style="color:var(--muted);margin-bottom:12px;font-size:0.95rem">Enter your school email. We will send a reset link if cloud accounts are enabled.</p>
         <input type="email" id="forgot-email" value="@school-beyond-limitations.com" placeholder="name@school-beyond-limitations.com"
           autocomplete="off" data-lpignore="true" data-1p-ignore>
-        <div id="forgot-local-fields" class="hidden" style="margin-top:4px">
-          <p style="color:var(--muted);font-size:0.9rem;margin-bottom:10px;text-align:left">Account found on this device. Choose a new password:</p>
-          <div class="password-wrap">
-            <input type="password" id="forgot-new-password" placeholder="New password" autocomplete="new-password"
-              autocorrect="off" autocapitalize="off" spellcheck="false"
-              data-lpignore="true" data-1p-ignore data-form-type="other">
-            <button type="button" class="pw-toggle" onclick="togglePassword('forgot-new-password', this)" title="Show password">👁</button>
-          </div>
-          <div class="password-wrap">
-            <input type="password" id="forgot-confirm-password" placeholder="Confirm new password" autocomplete="new-password"
-              autocorrect="off" autocapitalize="off" spellcheck="false"
-              data-lpignore="true" data-1p-ignore data-form-type="other">
-            <button type="button" class="pw-toggle" onclick="togglePassword('forgot-confirm-password', this)" title="Show password">👁</button>
-          </div>
-        </div>
-        <button class="btn primary" id="forgot-submit-btn" onclick="resetPassword()">Continue</button>
+        <button class="btn primary" onclick="resetPassword()">Send reset link</button>
         <p class="switch"><a href="#" onclick="showLogin(); return false;">Back to log in</a></p>
       </div>
 
@@ -2498,8 +2476,12 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-05e';
+const APP_VERSION = '2026-10-08e';
 const STORAGE_KEY = 'sbl_plan_data_v1';
+
+// User-supplied recovered account record. This is preserved separately from live app state.
+const SBL_RECOVERED_ACCOUNT_RECORD = {"title":"SBL PLAN — COMPLETE ACCOUNT RECOVERY RECORD","recordType":"reconstruction-record-not-verified-database-export","profile":{"displayName":"Adèle","starsReportedInProfile":105,"countryLanguageIndicator":"GE","accountStatus":"Accidentally deleted; attempting reconstruction.","avatar":"🐼","schoolEmail":"adeletrentinella@school-beyond-limitations.com","password":"NOT_INCLUDED_FOR_SECURITY"},"goals":{"longTerm":{"goal":"Become a Chess Grandmaster."},"shortTerm":[{"goal":"Chess: Get a C grade/level in chess.","purpose":"A stepping stone towards becoming a Chess Grandmaster.","actionSteps":["Do more puzzles.","Play games."]},{"goal":"Taekwondo: Get a green belt.","actionSteps":["Learn Won-Hyo.","Do 50 jumps in one minute (any kind of jumps)."]}]},"dailyHabits":["Play with Muffin.","Empty dishwasher.","Ventriloquism.","Chess.","Default habit 1 — Reading.","Default habit 2 — writing.","Default habit 3 — maths."],"books":[{"title":"Tuck Everlasting","author":"Natalie Babbitt"},{"title":"Born on a Blue Day","author":"Daniel Tammet"},{"title":"The School for Good and Evil: Quests for Glory","author":"Soman Chainani"}],"bookReview":{"reviewsWritten":1,"ratingStars":5,"sentiment":"Positive","bookReviewed":"Not recovered","originalReviewText":"Not recovered"},"inquiries":[{"title":"Andy Warhol","subject":"Art and creativity","reviewCompleted":true,"reviewText":"Not recovered","canvaProjectUrl":"https://www.canva.com/design/DAHZ2WR_k-U/oCfZiMZ-vWsnvcBkBe6ucg/edit"}],"reflections":{"daily":"Occasionally","weekly":"Occasionally","totalWritten":2,"individualContents":"Not required for recovery"},"sessions":{"type":"School lessons","approximateCount":"4–6","tuesday":[{"time":"13:00","subject":"Maths IGCSE","teacher":"Kiki Tompazi"},{"time":"14:00","subject":"Cooking","teacher":"Celia Martinez"}],"jupiter":{"weekA":{"time":"09:00","teacher":"Lisa Cornell"},"weekB":{"time":"09:00","teacher":"Debbie Andrew"},"note":"Week A and Week B Jupiter lessons belong to the same timetable, not additional unrelated sessions."},"excludedSessions":["Physics","Economics","English"]},"winsCatalogue":{"totalAchievements":34,"completedCount":16,"completed":[["First step!","Complete 1 action step","Panda avatar"],["Getting going","Complete 3 action steps","Pet avatars"],["Habit hero","Check off a habit","Unicorn avatar"],["Zesty","Check habits 5 times","Lemon theme"],["Habit builder","Check habits 10 times","Cat avatar"],["3-day streak","Get a 3-day habit streak","Chewy font"],["Star collector","Earn 25 stars","Star avatar"],["Wild pack","Earn 40 stars","Wild avatars"],["Superstar","Earn 50 stars","Sunset theme"],["Fun pack","Earn 75 stars","Fun avatars"],["Bookworm","Finish a book review","Berry theme"],["Curious mind","Finish an inquiry review","Owl avatar"],["Thoughtful","Write a reflection","Lavender theme"],["Peachy","Write 2 reflections","Peach theme"],["Showed up","Check off 5 sessions","QLD Hand font"],["Ocean pack","Check off 10 sessions","Ocean avatars"]],"remaining":[["On a roll",4,"5 action steps","Ocean theme"],["Action pro",4,"10 action steps","Aurora theme"],["Desert trek",4,"15 action steps","Sand theme"],["Unstoppable",3,"20 action steps","Ember theme"],["Week warrior",3,"7-day streak","Forest theme"],["Dino pack",3,"7-day streak","Dino avatars"],["Fortnight legend",3,"14-day streak","Grape theme"],["Little library",1,"3 book reviews","Books avatar"],["Explorer",1,"3 inquiry reviews","Sky theme"],["Goal getter",0,"1 goal","Candy theme"],["Nature pack",0,"2 goals","Nature avatars"],["Dream chaser",0,"3 goals","Rose theme"],["Deep thinker",2,"5 reflections","Arctic theme"],["Class champion",10,"20 sessions","Mint theme"],["Legend",105,"100 stars","Midnight theme"],["Minimalist",105,"150 stars","Mono theme"],["Galaxy brain",97,"200 stars","Coffee theme"],["Ultimate",97,"300 stars","High contrast theme"]]},"progressCounters":{"actionStepsCompleted":3,"longestHabitStreakDays":3,"habitChecks":"At least 10","bookReviews":1,"inquiryReviews":1,"goalsCompleted":0,"reflections":2,"sessionsCheckedOff":"At least 10","currentStars":97,"completedWins":"16/34"},"stuffToRemember":{"calendar":"Default calendar","oneTimeStaffMeeting":{"date":"5 November 2026","time":"16:15","person":"Martina Geromins","location":"Zoom room","recurring":false}},"schoolCalendar2026_2027":[["Winter Holiday","2026-12-21","2027-01-08"],["Residential 2","2027-01-31","2027-02-05"],["Carnival Holiday","2027-02-08","2027-02-12"],["Bootcamp / Focus Week","2027-03-01","2027-03-05"],["World Book Day","2027-03-04",null],["Community Celebration","2027-03-05",null],["Easter Holiday","2027-03-22","2027-03-30"],["Ascension Weekend","2027-05-07","2027-05-09"],["Pentecost","2027-05-17",null],["Hackathon","2027-06-07","2027-06-11"],["Community Celebration","2027-06-11",null],["Residential 3","2027-06-24","2027-06-29"],["Last day of school","2027-06-29",null],["Summer Holiday","2027-06-30","2027-08-27"]],"communityCelebrationZoom":{"url":"https://zoom.us/j/9656074147","host":"Dr. Martina Geromin","dates":["2027-03-05","2027-06-11"]},"tournaments":{"sectionExisted":true,"purpose":"Unknown","contents":"Unknown"},"otherAccountFeatures":["Daily planner","Weekly planner","Monthly planner","Goals and action steps","Daily and weekly reflections","Books and reviews","Inquiries and reviews","Daily habits","Sessions","Wins and rewards","Fonts, themes and avatars","Zoom rooms","Stuff to Remember"],"unknownOrNotRecovered":["Exact planner entries for remaining planner sections","Exact Zoom rooms","Profile customisation selections","Tournaments purpose and contents","Individual reflection text"],"importantDataConflicts":{"profileStars":105,"confirmedCurrentStars":97,"note":"Both values are preserved exactly as supplied; do not reconcile without evidence."},"sourceNote":"Recovered information supplied for reconstruction, not a verified original database export. Preserve unknowns and do not invent missing entries."};
+
 
 /* Firebase optional — leave empty for this-device accounts */
 const FIREBASE_CONFIG = {
@@ -2515,134 +2497,41 @@ const FIREBASE_CONFIG = {
 let firebaseReady = false;
 let auth = null;
 let db = null;
-let _firebaseInitPromise = null;
-let _authListenerBound = false;
-let _cloudSyncStatus = 'idle'; // idle | saving | ok | error
-let _skipNextCloudLoad = false;
-
 function initFirebaseSafe() {
-  if (_firebaseInitPromise) return _firebaseInitPromise;
   const ok = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId;
-  if (!ok) {
-    _firebaseInitPromise = Promise.resolve(false);
-    return _firebaseInitPromise;
-  }
-  _firebaseInitPromise = new Promise((resolve) => {
-    function start() {
-      if (typeof firebase === 'undefined') {
-        console.warn('Firebase SDK not loaded; using this device only');
-        resolve(false);
-        return;
-      }
-      try {
-        if (!firebase.apps || !firebase.apps.length) {
-          firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        auth = firebase.auth();
-        db = firebase.firestore();
-        firebaseReady = true;
-        try {
-          db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-        } catch (e) {}
-        bindAuthStateListener();
-        resolve(true);
-      } catch (e) {
-        console.warn('Firebase init failed', e);
-        firebaseReady = false;
-        resolve(false);
-      }
-    }
-    if (typeof firebase !== 'undefined') { start(); return; }
-    const urls = [
-      'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',
-      'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',
-      'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js'
-    ];
-    let i = 0;
-    function next() {
-      if (i >= urls.length) { start(); return; }
-      const s = document.createElement('script');
-      s.src = urls[i++];
-      s.onload = next;
-      s.onerror = () => { console.warn('Firebase script failed', urls[i-1]); next(); };
-      document.head.appendChild(s);
-    }
-    next();
-  });
-  return _firebaseInitPromise;
-}
-
-function bindAuthStateListener() {
-  if (_authListenerBound || !auth) return;
-  _authListenerBound = true;
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) return;
-    const email = (user.email || '').toLowerCase();
-    state.currentUser = email;
-    if (!state.users[email]) {
-      state.users[email] = {
-        username: email,
-        displayName: user.displayName || email.split('@')[0],
-        avatar: '🦊',
-        points: 0
-      };
+  if (!ok) return; // local-only mode — fully works without Firebase
+  function start() {
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase SDK not loaded; using this device only');
+      return;
     }
     try {
-      if (_skipNextCloudLoad) {
-        _skipNextCloudLoad = false;
-        await cloudSaveUserData(true);
-      } else {
-        await cloudLoadUserData();
-        // If cloud is empty but this email has a recovery pack, offer / auto-fill
-        if (isLocalPlannerSparse() && email === 'adeletrentinella@school-beyond-limitations.com') {
-          try {
-            const pack = buildAdeleRecoverySnapshot();
-            applyRecoverySnapshotData(pack);
-            await cloudSaveUserData(true);
-            toast('Restored Adèle pack + synced to cloud');
-          } catch (e) { console.warn(e); }
-        } else if (isLocalPlannerSparse()) {
-          // keep sparse; user can recover manually
-        } else if (plannerRichness(state) > 5) {
-          // Local has real data — make sure cloud has it too
-          await cloudSaveUserData(true);
-        }
-      }
-    } catch (e) { console.warn('auth sync', e); }
-    save();
-    ensureSchoolCalendar();
-    applyA11yModes();
-    document.getElementById('auth-screen').classList.remove('active');
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-screen').classList.add('active');
-    document.getElementById('app-screen').style.display = 'block';
-    if (typeof renderAll === 'function') renderAll();
-  });
+      firebase.initializeApp(FIREBASE_CONFIG);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      firebaseReady = true;
+    } catch (e) {
+      console.warn('Firebase init failed', e);
+      firebaseReady = false;
+    }
+  }
+  if (typeof firebase !== 'undefined') { start(); return; }
+  const urls = [
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js'
+  ];
+  let i = 0;
+  function next() {
+    if (i >= urls.length) { start(); return; }
+    const s = document.createElement('script');
+    s.src = urls[i++];
+    s.onload = next;
+    s.onerror = () => { console.warn('Firebase script failed'); };
+    document.head.appendChild(s);
+  }
+  next();
 }
-
-function plannerRichness(src) {
-  if (!src) return 0;
-  const n = (a) => Array.isArray(a) ? a.length : 0;
-  const refs = src.reflections && typeof src.reflections === 'object' ? Object.keys(src.reflections).length : 0;
-  const pts = (src.users && src.currentUser && src.users[src.currentUser])
-    ? (src.users[src.currentUser].points || 0)
-    : (src.points || 0);
-  return n(src.tasks) + n(src.habits) + n(src.notes) + n(src.classes) + n(src.goals)
-    + n(src.books) + n(src.inquiries) + refs + Math.min(20, Math.floor(pts / 5));
-}
-
-function cloudDataRichness(data) {
-  if (!data) return 0;
-  const n = (a) => Array.isArray(a) ? a.length : 0;
-  const refs = data.reflections && typeof data.reflections === 'object' ? Object.keys(data.reflections).length : 0;
-  return n(data.tasks) + n(data.habits) + n(data.notes) + n(data.classes) + n(data.goals)
-    + n(data.books) + n(data.inquiries) + refs + Math.min(20, Math.floor((data.points || 0) / 5));
-}
-
-function isLocalPlannerSparse() {
-  return plannerRichness(state) < 4;
-}
-
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // First Monday of the school year — A/B counting starts here
@@ -3529,39 +3418,8 @@ async function enableSessionNotifications() {
   state.notificationsEnabled = true;
   save();
   scheduleSessionNotifications();
-  // Immediate confirmation so the student knows the system works
-  showSessionNotification(
-    '🔔 Session reminders on',
-    'You will get alerts 5 min before and at the start of today’s sessions. Keep SBL Plan open in a tab (or use the Chrome app).',
-    'sbl-reminders-on'
-  );
-  const n = _sessionNotifTimers.length;
-  toast(n ? ('Session reminders on · ' + n + ' alert(s) scheduled 🔔') : 'Session reminders on · no timed sessions left today 🔔');
+  toast('Session reminders on 🔔');
   return true;
-}
-
-function testSessionReminder() {
-  if (!notificationsSupported()) {
-    toast('Notifications not supported in this browser');
-    return;
-  }
-  if (Notification.permission !== 'granted') {
-    // Request then test
-    enableSessionNotifications().then(ok => {
-      if (ok) {
-        showSessionNotification('🔔 Test reminder', 'If you see this, session reminders work on this device!', 'sbl-test');
-        toast('Test notification sent');
-      }
-    });
-    return;
-  }
-  if (!state.notificationsEnabled) {
-    state.notificationsEnabled = true;
-    save();
-    scheduleSessionNotifications();
-  }
-  showSessionNotification('🔔 Test reminder', 'If you see this, session reminders work on this device!', 'sbl-test');
-  toast('Test notification sent — check your screen');
 }
 
 function disableSessionNotifications() {
@@ -3590,24 +3448,23 @@ function initSessionNotifications() {
   if (state.notificationsEnabled && Notification.permission === 'granted') {
     scheduleSessionNotifications();
   } else if (state.notificationsEnabled && Notification.permission === 'denied') {
-    // keep preference but cannot fire until user re-allows in browser settings
+    state.notificationsEnabled = false;
   }
-  // Re-schedule when the tab wakes (browsers throttle timers in background)
-  if (!window._sblNotifVisBound) {
-    window._sblNotifVisBound = true;
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && state.notificationsEnabled) {
-        scheduleSessionNotifications();
-      }
-    });
-    window.addEventListener('focus', () => {
-      if (state.notificationsEnabled) scheduleSessionNotifications();
-    });
-    // Midnight rollover + periodic refresh
-    setInterval(() => {
-      if (state.notificationsEnabled) scheduleSessionNotifications();
-    }, 15 * 60 * 1000);
-  }
+  if (_sessionNotifInitDone) return;
+  _sessionNotifInitDone = true;
+  // Reschedule when tab becomes visible again (timers can be throttled in background)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state.notificationsEnabled) {
+      scheduleSessionNotifications();
+    }
+  });
+  // Midnight rollover — reschedule for the new day
+  const now = new Date();
+  const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 1, 0);
+  setTimeout(() => {
+    scheduleSessionNotifications();
+    setInterval(scheduleSessionNotifications, 24 * 60 * 60 * 1000);
+  }, Math.max(1000, nextMidnight - now));
 }
 
 
@@ -3657,18 +3514,6 @@ function save() {
   if (firebaseReady && auth && auth.currentUser) {
     cloudSaveUserData();
   }
-  // Keep a rolling local backup for the logged-in user (for recovery codes)
-  try {
-    if (state.currentUser && typeof buildAccountSnapshot === 'function') {
-      const snap = buildAccountSnapshot(state.currentUser);
-      const vault = readRecoveryVault();
-      const last = localStorage.getItem(RECOVERY_LAST_KEY);
-      if (last && vault[last]) {
-        vault[last] = snap;
-        writeRecoveryVault(vault);
-      }
-    }
-  } catch (e) {}
   try {
     if (typeof touchStudentPresence === 'function') {
       state.lastActive = new Date().toISOString();
@@ -3829,6 +3674,16 @@ function showLogin() {
   if (typeof prefillEmailFields === 'function') prefillEmailFields();
 }
 
+function showForgotPassword() {
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-form').classList.remove('hidden');
+  prefillEmailFields();
+  const fe = document.getElementById('forgot-email');
+  if (fe && !fe.value) fe.value = '@school-beyond-limitations.com';
+}
+
+
 
 function showRegister() {
   document.getElementById('login-form').classList.add('hidden');
@@ -3853,125 +3708,30 @@ async function resetPassword() {
     toast('Enter your full school email');
     return;
   }
-
-  const localFields = document.getElementById('forgot-local-fields');
-  const submitBtn = document.getElementById('forgot-submit-btn');
-  const localUser = state.users && state.users[email];
-
-  // Step 2 for local accounts: user already saw the new-password fields
-  if (localFields && !localFields.classList.contains('hidden')) {
-    const p1 = (document.getElementById('forgot-new-password')?.value || '');
-    const p2 = (document.getElementById('forgot-confirm-password')?.value || '');
-    if (!p1 || p1.length < 4) {
-      toast('Use at least 4 characters for the new password');
-      return;
-    }
-    if (p1 !== p2) {
-      toast('Passwords do not match');
-      return;
-    }
-    if (!localUser) {
-      toast('Account not found on this device');
-      return;
-    }
-    localUser.password = p1;
-    save();
-    // Also try cloud reset email if signed-in provider exists (best effort)
-    if (firebaseReady && auth) {
-      try { await auth.sendPasswordResetEmail(email); } catch (e) { /* local reset already applied */ }
-    }
-    toast('Password updated! You can log in now 🔑');
-    document.getElementById('forgot-new-password').value = '';
-    document.getElementById('forgot-confirm-password').value = '';
-    localFields.classList.add('hidden');
-    if (submitBtn) submitBtn.textContent = 'Continue';
+  if (!firebaseReady) {
+    openModal(`
+      <h3>Password reset</h3>
+      <p style="text-align:left;line-height:1.5;color:var(--muted)">
+        Cloud accounts are not connected yet, so reset emails cannot be sent from this site.
+        <br><br>
+        <strong>What to do:</strong> ask a facilitator or parent to help set up Firebase (free),
+        or create a new account if this device never had your data.
+        <br><br>
+        Never share passwords in chat or email.
+      </p>
+      <button class="btn primary" onclick="closeModal(); showLogin()">OK</button>
+    `);
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    toast('Reset email sent — check your inbox');
     showLogin();
-    const loginEmail = document.getElementById('login-email');
-    if (loginEmail) loginEmail.value = email;
-    return;
+  } catch (e) {
+    console.warn(e);
+    toast('Could not send reset. Check the email address.');
   }
-
-  // Cloud mode: send Firebase reset email
-  if (firebaseReady && auth) {
-    try {
-      await auth.sendPasswordResetEmail(email);
-      openModal(`
-        <h3>Check your email 📬</h3>
-        <p style="text-align:left;line-height:1.55;color:var(--muted)">
-          If an account exists for <strong>${email.replace(/</g,'')}</strong>, a reset link is on its way.
-          <br><br>
-          Open the email, tap the link, choose a new password, then come back here to log in.
-          <br><br>
-          <span style="font-size:0.9rem">Tip: look in Spam / Junk if you do not see it in a few minutes.</span>
-        </p>
-        <button class="btn primary" onclick="closeModal(); showLogin()">Back to log in</button>
-      `);
-      toast('Reset email sent — check your inbox');
-      return;
-    } catch (e) {
-      console.warn(e);
-      const code = (e && e.code) || '';
-      if (code === 'auth/user-not-found') {
-        // Fall through to local check / helpful message
-      } else if (code === 'auth/invalid-email') {
-        toast('That email does not look valid');
-        return;
-      } else if (code === 'auth/too-many-requests') {
-        toast('Too many tries — wait a bit and try again');
-        return;
-      } else {
-        // Network / config issues: still allow local reset if possible
-        console.warn('cloud reset failed, trying local', e);
-      }
-    }
-  }
-
-  // Local-only account on this device
-  if (localUser) {
-    if (localFields) localFields.classList.remove('hidden');
-    if (submitBtn) submitBtn.textContent = 'Save new password';
-    toast('Account found — set a new password below');
-    setTimeout(() => document.getElementById('forgot-new-password')?.focus(), 50);
-    return;
-  }
-
-  // Nothing we can reset
-  openModal(`
-    <h3>No account found</h3>
-    <p style="text-align:left;line-height:1.55;color:var(--muted)">
-      We could not find <strong>${email.replace(/</g,'')}</strong> on this device
-      ${firebaseReady ? 'or send a cloud reset email' : '(and cloud reset is not available here)'}.
-      <br><br>
-      <strong>Try:</strong>
-    </p>
-    <ul style="text-align:left;color:var(--muted);line-height:1.5;padding-left:18px;margin:8px 0 14px">
-      <li>Check the email spelling</li>
-      <li>Use the same browser / device you registered on</li>
-      <li>Create a new account if this is your first time here</li>
-      <li>Ask a facilitator or parent for help</li>
-    </ul>
-    <button class="btn primary" onclick="closeModal()">OK</button>
-    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal(); showRegister()">Create account</button>
-  `);
 }
-
-function showForgotPassword() {
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-form').classList.remove('hidden');
-  const localFields = document.getElementById('forgot-local-fields');
-  if (localFields) localFields.classList.add('hidden');
-  const submitBtn = document.getElementById('forgot-submit-btn');
-  if (submitBtn) submitBtn.textContent = 'Continue';
-  const np = document.getElementById('forgot-new-password');
-  const cp = document.getElementById('forgot-confirm-password');
-  if (np) np.value = '';
-  if (cp) cp.value = '';
-  prefillEmailFields();
-  const fe = document.getElementById('forgot-email');
-  if (fe && !fe.value) fe.value = '@school-beyond-limitations.com';
-}
-
 
 function toggleAdhdMode() {
   state.adhdMode = !state.adhdMode;
@@ -4054,7 +3814,7 @@ function openPrivacyModal() {
       <p><strong>Notifications:</strong> optional session reminders use your browser’s notification permission on this device only. We do not send marketing alerts.</p>
       <p><strong>Why:</strong> to provide the planner, sync your data when cloud accounts are on, and remember accessibility settings.</p>
       <p><strong>Where:</strong> on this device (browser storage). If cloud accounts are enabled, also on the school’s configured cloud project (e.g. Firebase/Google) in the EU if you choose an EU region.</p>
-      <p><strong>Your rights:</strong> access, correct, or delete your data. Use Settings → Delete my account, or ask your school facilitator.</p>
+      <p><strong>Your rights:</strong> access, correct, export, or delete your data. Use Settings → Export data or Delete my account.</p>
       <p><strong>Children:</strong> SBL Plan is for school students (about age 6+). A parent or guardian must agree before an account is created (EU GDPR rules for children).</p>
       <p><strong>Contact:</strong> ask your school facilitator or data-protection contact for SBL.</p>
       <p>We do not sell data. We do not use advertising trackers in this app.</p>
@@ -4362,91 +4122,6 @@ function setTheme(name) {
   openThemeModal();
 }
 
-
-function openEditAccountModal() {
-  const user = state.users[state.currentUser] || {};
-  const email = state.currentUser || '';
-  const name = (user.displayName || '').replace(/"/g, '&quot;');
-  const hasLocalPw = !!(user.password);
-  const cloud = !!(firebaseReady && auth && auth.currentUser);
-  openModal(`
-    <h3>Edit account 👤</h3>
-    <div style="text-align:left">
-      <label>School email</label>
-      <input type="text" value="${email.replace(/"/g,'&quot;')}" disabled style="opacity:0.75">
-      <label>Display name</label>
-      <input type="text" id="edit-display-name" value="${name}" placeholder="Your name" maxlength="40">
-      <p style="font-size:0.85rem;color:var(--muted);margin:8px 0 4px">Change avatar from your profile picture in the header.</p>
-      <hr style="border:none;border-top:1px solid var(--border-soft,#eee);margin:14px 0">
-      <label>New password ${cloud ? '(updates cloud login too)' : '(this device)'}</label>
-      <div class="password-wrap">
-        <input type="password" id="edit-new-password" placeholder="Leave blank to keep current" autocomplete="new-password"
-          data-lpignore="true" data-1p-ignore>
-        <button type="button" class="pw-toggle" onclick="togglePassword('edit-new-password', this)" title="Show password">👁</button>
-      </div>
-      <div class="password-wrap">
-        <input type="password" id="edit-confirm-password" placeholder="Confirm new password" autocomplete="new-password"
-          data-lpignore="true" data-1p-ignore>
-        <button type="button" class="pw-toggle" onclick="togglePassword('edit-confirm-password', this)" title="Show password">👁</button>
-      </div>
-      ${hasLocalPw ? `<label>Current password (needed to change password on this device)</label>
-      <div class="password-wrap">
-        <input type="password" id="edit-current-password" placeholder="Current password" autocomplete="current-password"
-          data-lpignore="true" data-1p-ignore>
-        <button type="button" class="pw-toggle" onclick="togglePassword('edit-current-password', this)" title="Show password">👁</button>
-      </div>` : ''}
-      <button class="btn primary" onclick="saveAccountEdits()">Save changes</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); openAvatarModal();">Change avatar ✨</button>
-    </div>
-  `);
-}
-
-async function saveAccountEdits() {
-  const user = state.users[state.currentUser];
-  if (!user) { toast('Not signed in'); return; }
-  const nameEl = document.getElementById('edit-display-name');
-  const newName = (nameEl?.value || '').trim();
-  if (!newName) { toast('Please enter a display name'); return; }
-  user.displayName = newName;
-
-  const p1 = (document.getElementById('edit-new-password')?.value || '');
-  const p2 = (document.getElementById('edit-confirm-password')?.value || '');
-  if (p1 || p2) {
-    if (p1.length < 4) { toast('New password needs at least 4 characters'); return; }
-    if (p1 !== p2) { toast('New passwords do not match'); return; }
-    if (user.password) {
-      const cur = (document.getElementById('edit-current-password')?.value || '');
-      if (cur !== user.password) { toast('Current password is wrong'); return; }
-    }
-    user.password = p1;
-    // Cloud password update when possible
-    if (firebaseReady && auth && auth.currentUser) {
-      try {
-        await auth.currentUser.updatePassword(p1);
-      } catch (e) {
-        console.warn(e);
-        const code = e && e.code;
-        if (code === 'auth/requires-recent-login') {
-          toast('Password saved on this device. For cloud: log out, log in, then change password again.');
-        } else if (code === 'auth/weak-password') {
-          toast('Cloud rejected password — use a stronger one');
-          return;
-        } else {
-          toast('Local password updated (cloud update failed)');
-        }
-      }
-    }
-  }
-
-  if (firebaseReady && auth && auth.currentUser) {
-    try { await auth.currentUser.updateProfile({ displayName: newName }); } catch (e) {}
-  }
-  save();
-  renderHeader();
-  closeModal();
-  toast('Account updated ✓');
-}
-
 function openSettingsModal() {
   const notifOk = notificationsSupported();
   const perm = notificationPermission();
@@ -4461,35 +4136,175 @@ function openSettingsModal() {
     notifLabel = 'Session reminders: blocked in browser';
     notifColor = '#E74C3C';
   }
-  const scheduledN = (typeof _sessionNotifTimers !== 'undefined' && _sessionNotifTimers) ? _sessionNotifTimers.length : 0;
-  const todaySessionsWithTime = (typeof sessionsForDate === 'function')
-    ? sessionsForDate(todayStr()).filter(c => c.time).length
-    : 0;
   openModal(`
     <h3>Settings ⚙️</h3>
     <div class="settings-panel" style="text-align:left">
-      <button class="btn add-btn" style="margin-top:8px;background:#0984E3" onclick="closeModal(); openEditAccountModal();">👤 Edit account</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#00CEC9" onclick="closeModal(); showAccountInventory();">📋 What’s on my account</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="closeModal(); openRecoveryCodeModal();">🔑 Recovery / backup code</button>
       <button class="btn add-btn" style="margin-top:8px" onclick="toggleAdhdMode(); closeModal();">🎯 Focus mode: ${state.adhdMode ? 'ON' : 'OFF'}</button>
       <button class="btn add-btn" style="margin-top:8px;background:#A78BFA" onclick="closeModal(); openFontModal();">Aa Font: ${state.fontFamily === 'chewy' ? 'Chewy' : state.fontFamily === 'eduqld' ? 'QLD Hand' : (state.fontFamily === 'opendyslexic' || state.dyslexiaMode ? 'Easy read' : 'Clear')}</button>
       <button class="btn add-btn" style="margin-top:8px;background:var(--primary)" onclick="closeModal(); openThemeModal();">${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).emoji} Theme: ${(THEME_OPTIONS[state.theme||'sunshine']||THEME_OPTIONS.sunshine).label}</button>
       <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); openTimezoneModal();">🌍 Timezone</button>
       <button class="btn add-btn" style="margin-top:8px;background:${notifColor}" onclick="toggleSessionNotifications()">${notifLabel}</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#00B894" onclick="testSessionReminder()">🔔 Test reminder now</button>
-      <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you <strong>5 minutes before</strong> and <strong>at the start</strong> of today’s sessions (${todaySessionsWithTime} timed today · ${scheduledN} alerts scheduled). Keep a tab open (or use the Chrome app) for reliable alerts.</p>
+      <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0;line-height:1.4">Reminds you 5 minutes before and at the start of today’s sessions. Keep the planner open (or in a tab) for reliable alerts. Needs browser permission.</p>
+      <button class="btn add-btn" style="margin-top:8px;background:#0984E3" onclick="exportMyData()">⬇️ Export my data (JSON)</button>
+      <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="openRecoveryCodeModal()">🧩 Full account recovery code</button>
       <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="exportProgressReport()">📄 Share progress report</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="installSblApp()">${(window._sblCanInstall || window.matchMedia('(display-mode: standalone)').matches) ? (window.matchMedia('(display-mode: standalone)').matches ? '✅ App installed' : '📲 Install app') : '📲 Install app'}</button>
-      <p style="font-size:0.75rem;color:var(--muted);margin:4px 0 0;line-height:1.35">One tap install — appears with your other apps. Works best when opened from the school website (https).</p>
+      <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="downloadChromeExtension()">🧩 Download Chrome extension</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E17055" onclick="closeModal(); openPrivacyModal();">🔒 Privacy notice</button>
       <button class="btn add-btn" style="margin-top:8px;background:#E74C3C" onclick="deleteMyAccount()">🗑️ Delete my account</button>
       <button class="btn add-btn" style="margin-top:8px;background:#2D3436" onclick="logoutUser()">Log out</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#0984E3" onclick="forceCloudSyncNow()">☁️ Sync now (this device ↔ cloud)</button>
-      <p style="font-size:0.8rem;color:var(--muted);margin-top:12px">Cloud: ${firebaseReady ? ('✅ ready' + (auth && auth.currentUser ? ' · signed in' : ' · not signed in to Firebase')) : '⚠️ offline / not loaded'} · status: ${_cloudSyncStatus || 'idle'}</p>
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:12px">Cloud sync: ${firebaseReady ? '✅ on (any device)' : '⚠️ this device only — school must add Firebase config'}</p>
     </div>
   `);
 }
 
+function buildFullRecoveryPayload() {
+  // Include the entire live app state plus the separately preserved reconstruction record.
+  // Never include account passwords or authentication tokens in a recovery export.
+  const safeState = JSON.parse(JSON.stringify(state));
+  if (safeState.users && safeState.currentUser && safeState.users[safeState.currentUser]) {
+    delete safeState.users[safeState.currentUser].password;
+    delete safeState.users[safeState.currentUser].passwordHash;
+    delete safeState.users[safeState.currentUser].credential;
+  }
+  return {
+    format: 'SBL-PLAN-FULL-RECOVERY',
+    formatVersion: 2,
+    createdAt: new Date().toISOString(),
+    accountRecoveryRecord: SBL_RECOVERED_ACCOUNT_RECORD,
+    appState: safeState,
+    instructions: 'Keep this entire code private. Import it through Settings > Full account recovery code. Passwords and sign-in credentials are intentionally excluded.'
+  };
+}
+
+function encodeRecoveryPayload(payload) {
+  const json = JSON.stringify(payload);
+  return 'SBLRECOVERY2.' + btoa(unescape(encodeURIComponent(json)));
+}
+
+function decodeRecoveryCode(code) {
+  const trimmed = String(code || '').trim();
+  if (!trimmed.startsWith('SBLRECOVERY2.')) throw new Error('This is not a valid SBL full recovery code.');
+  const decoded = decodeURIComponent(escape(atob(trimmed.slice('SBLRECOVERY2.'.length))));
+  const payload = JSON.parse(decoded);
+  if (payload.format !== 'SBL-PLAN-FULL-RECOVERY' || payload.formatVersion !== 2) throw new Error('Unsupported recovery-code version.');
+  return payload;
+}
+
+function openRecoveryCodeModal() {
+  openModal(`
+    <h3>🧩 Full account recovery</h3>
+    <p style="color:var(--muted);font-size:.9rem;margin:8px 0 12px">This creates a complete backup code containing the recovered SBL record and all current app data (goals, habits, books, inquiries, sessions, calendar data, rewards, settings and more).</p>
+    <button class="btn primary" onclick="generateFullRecoveryCode()">Generate full recovery code</button>
+    <label style="display:block;margin:16px 0 6px;font-weight:800">Or paste a recovery code to restore</label>
+    <textarea id="sbl-recovery-input" rows="5" style="width:100%;padding:12px;border:2px solid var(--border-soft,#ddd);border-radius:12px;font:12px monospace" placeholder="Paste the complete SBLRECOVERY2... code here"></textarea>
+    <button class="btn add-btn" onclick="restoreFullRecoveryCode()">Restore from code</button>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Keep the code somewhere private. It contains personal planner information. It does not contain your password.</p>
+  `);
+}
+
+function generateFullRecoveryCode() {
+  try {
+    const code = encodeRecoveryPayload(buildFullRecoveryPayload());
+    openModal(`
+      <h3>Full recovery code ready ✅</h3>
+      <p style="font-size:.88rem;color:var(--muted);margin:8px 0">Copy and save the entire code. It is deliberately long because it contains the full recovery record and app backup.</p>
+      <textarea id="sbl-recovery-output" rows="10" readonly style="width:100%;padding:12px;border:2px solid var(--border-soft,#ddd);border-radius:12px;font:11px monospace;overflow-wrap:anywhere">${code}</textarea>
+      <button class="btn primary" onclick="copyFullRecoveryCode()">📋 Copy full recovery code</button>
+      <button class="btn add-btn" onclick="downloadFullRecoveryCode()">⬇️ Download recovery file</button>
+      <button class="btn add-btn" style="background:#636E72" onclick="openRecoveryCodeModal()">Back</button>
+    `);
+  } catch (e) { console.error(e); toast('Could not generate recovery code'); }
+}
+
+function copyFullRecoveryCode() {
+  const el = document.getElementById('sbl-recovery-output');
+  if (!el) return;
+  el.select();
+  try { document.execCommand('copy'); toast('Full recovery code copied'); }
+  catch (e) { toast('Select the code and copy it manually'); }
+}
+
+function downloadFullRecoveryCode() {
+  const payload = buildFullRecoveryPayload();
+  const code = encodeRecoveryPayload(payload);
+  const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'SBL-Plan-Full-Recovery-Code.txt';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('Recovery file downloaded');
+}
+
+function restoreFullRecoveryCode() {
+  const input = document.getElementById('sbl-recovery-input');
+  try {
+    const payload = decodeRecoveryCode(input?.value || '');
+    if (!confirm('Restore this SBL backup? Your current planner data will be replaced by the data in the recovery code.')) return;
+    if (payload.appState && typeof payload.appState === 'object') {
+      state = { ...state, ...payload.appState };
+      if (!state.users) state.users = {};
+    }
+    if (payload.accountRecoveryRecord) state.recoveryRecord = payload.accountRecoveryRecord;
+    const rec = payload.accountRecoveryRecord || {};
+    const profile = rec.profile || {};
+    const email = String(profile.schoolEmail || state.currentUser || '').toLowerCase();
+    if (email) {
+      state.currentUser = email;
+      state.users[email] = state.users[email] || {};
+      state.users[email].username = email;
+      state.users[email].displayName = profile.displayName || state.users[email].displayName || 'Student';
+      state.users[email].avatar = profile.avatar || state.users[email].avatar || '🦊';
+      // Keep the supplied star discrepancy visible rather than silently choosing one value.
+      if (typeof profile.starsReportedInProfile === 'number' && typeof state.users[email].points !== 'number') state.users[email].points = profile.starsReportedInProfile;
+    }
+    save();
+    applyA11yModes();
+    closeModal();
+    const authScreen = document.getElementById('auth-screen');
+    const appScreen = document.getElementById('app-screen');
+    if (authScreen && appScreen && state.currentUser && state.users[state.currentUser]) {
+      authScreen.classList.remove('active'); authScreen.style.display = 'none';
+      appScreen.classList.add('active'); appScreen.style.display = 'block';
+      ensureSchoolCalendar(); renderAll();
+    }
+    toast('Recovery data restored. Check each section against the record.');
+  } catch (e) {
+    console.error(e);
+    toast(e.message || 'Could not read recovery code');
+  }
+}
+
+function exportMyData() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    recoveryRecord: SBL_RECOVERED_ACCOUNT_RECORD,
+    email: state.currentUser,
+    tasks: state.tasks,
+    habits: state.habits,
+    notes: state.notes,
+    classes: state.classes,
+    goals: state.goals || [],
+    reflections: state.reflections || {},
+    books: state.books || [],
+    inquiries: state.inquiries || [],
+    readingBook: state.readingBook || null,
+    topicInquiry: state.topicInquiry || null,
+    timezone: state.timezone,
+    adhdMode: state.adhdMode,
+    dyslexiaMode: state.dyslexiaMode,
+    notificationsEnabled: !!state.notificationsEnabled,
+    theme: state.theme || 'sunshine',
+    unlockedAchievements: state.unlockedAchievements || [],
+    reflectionSaveCount: state.reflectionSaveCount || 0
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sbl-plan-my-data.json';
+  a.click();
+  toast('Data downloaded');
+}
 
 function exportProgressReport() {
   const user = state.users[state.currentUser] || {};
@@ -4659,1317 +4474,61 @@ async function tryEnterMentorMode() {
   return true;
 }
 
-
-/* ---------- Clean app install (PWA) ---------- */
-window._sblDeferredInstall = null;
-window._sblCanInstall = false;
-window._sblPwaReady = false;
-
-function isStandaloneApp() {
-  try {
-    return window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
-  } catch (e) { return false; }
-}
-
-function isSecureContextForPwa() {
-  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-}
-
-async function canvasIconDataUrl(size) {
-  const c = document.createElement('canvas');
-  c.width = size; c.height = size;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, size, size);
-  g.addColorStop(0, '#FFE66D');
-  g.addColorStop(0.5, '#FF6B6B');
-  g.addColorStop(1, '#A78BFA');
-  ctx.fillStyle = g;
-  const r = Math.max(2, size * 0.22);
-  ctx.beginPath();
-  ctx.moveTo(r, 0); ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
-  ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
-  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
-  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold ' + Math.round(size * 0.28) + 'px system-ui,sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('SBL', size / 2, size / 2);
-  return c.toDataURL('image/png');
-}
-
-async function setupPwaInstall() {
-  if (window._sblPwaReady) return;
-  window._sblPwaReady = true;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    window._sblDeferredInstall = e;
-    window._sblCanInstall = true;
-  });
-  window.addEventListener('appinstalled', () => {
-    window._sblDeferredInstall = null;
-    window._sblCanInstall = false;
-    toast('SBL Plan installed! 🎉');
-  });
-
-  // Manifest so the browser can offer Install
-  try {
-    const icon192 = await canvasIconDataUrl(192);
-    const icon512 = await canvasIconDataUrl(512);
-    const startUrl = location.href.split('#')[0] || './';
-    const manifest = {
-      name: 'SBL Plan',
-      short_name: 'SBL Plan',
-      description: 'School Beyond Limitations student planner',
-      start_url: startUrl,
-      scope: startUrl.replace(/\/[^/]*$/, '/') || './',
-      display: 'standalone',
-      orientation: 'any',
-      background_color: '#FFF8F0',
-      theme_color: '#FF6B6B',
-      icons: [
-        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-      ]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    let link = document.querySelector('link[rel="manifest"]');
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'manifest';
-      document.head.appendChild(link);
-    }
-    link.href = url;
-  } catch (e) { console.warn('manifest', e); }
-
-  // Minimal service worker (helps Chrome treat it as installable on https)
-  if ('serviceWorker' in navigator && isSecureContextForPwa()) {
-    try {
-      const swCode = [
-        "self.addEventListener('install', e => { self.skipWaiting(); });",
-        "self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });",
-        "self.addEventListener('fetch', e => { /* network-first; app works online */ });"
-      ].join('\n');
-      const swBlob = new Blob([swCode], { type: 'text/javascript' });
-      const swUrl = URL.createObjectURL(swBlob);
-      await navigator.serviceWorker.register(swUrl, { scope: './' }).catch(() => {});
-    } catch (e) { console.warn('sw', e); }
-  }
-}
-
-async function installSblApp() {
-  if (isStandaloneApp()) {
-    openModal(`
-      <h3>✅ Already installed</h3>
-      <p style="text-align:left;color:var(--muted);line-height:1.5">SBL Plan is running as an app on this device. You can open it from your home screen or app list.</p>
-      <button class="btn primary" onclick="closeModal()">OK</button>
-    `);
-    return;
-  }
-
-  // Native install prompt (Chrome / Edge / Android)
-  if (window._sblDeferredInstall) {
-    try {
-      window._sblDeferredInstall.prompt();
-      const choice = await window._sblDeferredInstall.userChoice;
-      if (choice && choice.outcome === 'accepted') {
-        toast('Installing…');
-      } else {
-        toast('Install cancelled');
-      }
-      window._sblDeferredInstall = null;
-      window._sblCanInstall = false;
-    } catch (e) {
-      console.warn(e);
-      showInstallHelpModal();
-    }
-    return;
-  }
-
-  showInstallHelpModal();
-}
-
-function showInstallHelpModal() {
-  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const secure = isSecureContextForPwa();
-  const fileProto = location.protocol === 'file:';
-
-  let body = '';
-  if (ios) {
-    body = `
-      <p style="margin-bottom:10px"><strong>On iPhone / iPad (cleanest way)</strong></p>
-      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
-        <li>Open SBL Plan in <strong>Safari</strong></li>
-        <li>Tap the <strong>Share</strong> button</li>
-        <li>Tap <strong>Add to Home Screen</strong></li>
-        <li>Tap <strong>Add</strong></li>
-      </ol>
-      <p style="font-size:0.9rem;color:var(--muted)">It then sits with your other apps.</p>`;
-  } else if (fileProto || !secure) {
-    body = `
-      <p style="margin-bottom:10px"><strong>Cleanest install</strong></p>
-      <p style="color:var(--muted);line-height:1.5;margin-bottom:10px">
-        Browsers only show the one-tap <strong>Install app</strong> button when SBL Plan is opened from a website
-        address starting with <strong>https://</strong> (not a downloaded file).
-      </p>
-      <p style="color:var(--muted);line-height:1.5;margin-bottom:10px">
-        <strong>Ask your school</strong> for the planner link, open it in Chrome, then:
-      </p>
-      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
-        <li>Open the menu (⋮) → <strong>Install SBL Plan</strong> / <strong>Install app</strong></li>
-        <li>Or look for the install icon in the address bar</li>
-      </ol>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">
-        On your other device it already works because it was installed from a proper app/extension setup.
-      </p>
-      <button class="btn add-btn" style="background:#636E72" onclick="downloadChromeExtension()">Advanced: Chrome extension package</button>`;
-  } else {
-    body = `
-      <p style="margin-bottom:10px"><strong>Install in one step</strong></p>
-      <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted);line-height:1.5">
-        <li>In Chrome, open the <strong>⋮</strong> menu</li>
-        <li>Tap <strong>Install SBL Plan</strong> or <strong>Install app</strong></li>
-        <li>Confirm — it appears with your other apps</li>
-      </ol>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">
-        You can also use the install icon in the address bar when Chrome shows it.
-      </p>
-      <button class="btn add-btn" style="background:#636E72" onclick="downloadChromeExtension()">Advanced: Chrome extension package</button>`;
-  }
-
-  openModal(`
-    <h3>📲 Install SBL Plan</h3>
-    <div style="text-align:left;font-size:0.95rem">${body}</div>
-    <button class="btn primary" style="margin-top:12px" onclick="closeModal()">Got it</button>
-  `);
-}
-
-// Start PWA hooks early
-try { setupPwaInstall(); } catch (e) {}
-
-/* ---------- Install as Chrome app (extension package) ---------- */
-function loadJSZipLib() {
-  return new Promise((resolve, reject) => {
-    if (window.JSZip) { resolve(window.JSZip); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
-    s.onload = () => window.JSZip ? resolve(window.JSZip) : reject(new Error('JSZip missing'));
-    s.onerror = () => reject(new Error('Could not load JSZip'));
-    document.head.appendChild(s);
-  });
-}
-
-async function makeAppIconBlob(size) {
-  const c = document.createElement('canvas');
-  c.width = size; c.height = size;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, size, size);
-  g.addColorStop(0, '#FFE66D');
-  g.addColorStop(0.5, '#FF6B6B');
-  g.addColorStop(1, '#A78BFA');
-  ctx.fillStyle = g;
-  const r = Math.max(2, size * 0.22);
-  ctx.beginPath();
-  ctx.moveTo(r, 0); ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
-  ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
-  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
-  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold ' + Math.round(size * 0.28) + 'px system-ui,sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('SBL', size / 2, size / 2);
-  return await new Promise(res => c.toBlob(res, 'image/png'));
-}
-
+/* ---------- Chrome extension download ---------- */
 async function downloadChromeExtension() {
-  toast('Preparing Chrome app…');
+  toast('Preparing extension…');
   try {
-    const JSZip = await loadJSZipLib();
+    const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
     const zip = new JSZip();
-    const [icon16, icon48, icon128] = await Promise.all([
-      makeAppIconBlob(16), makeAppIconBlob(48), makeAppIconBlob(128)
-    ]);
-    zip.file('icons/icon16.png', icon16);
-    zip.file('icons/icon48.png', icon48);
-    zip.file('icons/icon128.png', icon128);
-
     const manifest = {
       manifest_version: 3,
       name: 'SBL Plan',
-      version: '1.2.0',
-      description: 'School Beyond Limitations student planner — opens like an app',
-      icons: {
-        '16': 'icons/icon16.png',
-        '48': 'icons/icon48.png',
-        '128': 'icons/icon128.png'
-      },
-      action: {
-        default_title: 'Open SBL Plan',
-        default_icon: {
-          '16': 'icons/icon16.png',
-          '48': 'icons/icon48.png'
-        }
-      },
-      background: { service_worker: 'background.js' },
+      version: '1.0.0',
+      description: 'School Beyond Limitations student planner',
+      action: { default_title: 'Open SBL Plan', default_popup: 'popup.html' },
       chrome_url_overrides: { newtab: 'index.html' },
-      permissions: ['storage', 'notifications'],
+      permissions: ['storage'],
       host_permissions: [
         'https://*.firebaseapp.com/*',
         'https://*.googleapis.com/*',
         'https://*.firebaseio.com/*',
-        'https://www.gstatic.com/*',
-        'https://fonts.googleapis.com/*',
-        'https://fonts.gstatic.com/*',
-        'https://fonts.cdnfonts.com/*',
-        'https://cdn.jsdelivr.net/*'
+        'https://www.gstatic.com/*'
       ]
     };
-
-    const backgroundJs = [
-      'chrome.action.onClicked.addListener(() => {',
-      '  chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });',
-      '});'
-    ].join('\n');
-
-    const readme = [
-      'SBL Plan — install as a Chrome app',
-      '================================',
-      '',
-      '1. Unzip this folder (keep the folder structure).',
-      '2. Open Chrome → chrome://extensions',
-      '3. Turn ON "Developer mode" (top right).',
-      '4. Click "Load unpacked" → select this unzipped folder.',
-      '5. Pin SBL Plan (puzzle icon → pin).',
-      '',
-      'How to use it like an app',
-      '- Click the SBL Plan toolbar icon anytime to open the planner.',
-      '- New Tab also opens SBL Plan (optional — see below).',
-      '- Session reminders work best with the planner open or pinned.',
-      '',
-      'To remove New Tab override:',
-      'Edit manifest.json, delete the "chrome_url_overrides" line,',
-      'then click Reload on chrome://extensions.'
-    ].join('\n');
-
-    // Snapshot of the live planner
-    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const popup = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+      body{font-family:system-ui,sans-serif;margin:12px;min-width:220px}
+      a{display:block;padding:10px;background:#6C5CE7;color:#fff;text-align:center;border-radius:10px;text-decoration:none;font-weight:700}
+      </style></head><body>
+      <p><strong>SBL Plan</strong></p>
+      <a href="index.html" target="_blank">Open planner</a>
+      <p style="font-size:12px;color:#666;margin-top:10px">Or set as your New Tab (already in this extension).</p>
+      </body></html>`;
+    // Use current page HTML
+    let html = document.documentElement.outerHTML;
+    // Ensure relative paths still work offline where possible
     zip.file('manifest.json', JSON.stringify(manifest, null, 2));
-    zip.file('background.js', backgroundJs);
+    zip.file('popup.html', popup);
     zip.file('index.html', html);
-    zip.file('README.txt', readme);
-
+    zip.file('README.txt', 'SBL Plan Chrome extension\\n\\n1. Unzip this folder\\n2. Chrome → chrome://extensions\\n3. Enable Developer mode\\n4. Load unpacked → select this folder\\n');
     const blob = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'sbl-plan-chrome-app.zip';
-    document.body.appendChild(a);
+    a.download = 'sbl-plan-chrome-extension.zip';
     a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-
-    openModal(`
-      <h3>📱 Chrome app ready</h3>
-      <div style="text-align:left;line-height:1.5;font-size:0.95rem">
-        <p style="margin-bottom:10px"><strong>sbl-plan-chrome-app.zip</strong> downloaded.</p>
-        <ol style="padding-left:18px;margin:0 0 12px;color:var(--muted)">
-          <li>Unzip the folder</li>
-          <li>Open <strong>chrome://extensions</strong></li>
-          <li>Turn on <strong>Developer mode</strong></li>
-          <li><strong>Load unpacked</strong> → choose the folder</li>
-          <li>Pin the SBL Plan icon</li>
-        </ol>
-        <p style="font-size:0.85rem;color:var(--muted)">Same method as on your other device. This is a real Chrome extension app — not a plain HTML file.</p>
-      </div>
-      <button class="btn primary" onclick="closeModal()">Got it</button>
-    `);
-    toast('Chrome app zip downloaded');
+    toast('Extension zip downloaded — Load unpacked in chrome://extensions');
   } catch (e) {
     console.warn(e);
-    toast('Could not build app package — check internet and try again');
+    toast('Could not build zip — check internet (needs JSZip CDN)');
   }
 }
 
-
-
-
-
-
-
-/* ========== Account inventory + recovery codes ========== */
-const RECOVERY_VAULT_KEY = 'sbl_recovery_vault_v1';
-const RECOVERY_LAST_KEY = 'sbl_recovery_last_v1';
-
-const ACCOUNT_DATA_KEYS = [
-  'tasks', 'habits', 'notes', 'classes', 'goals', 'reflections',
-  'books', 'inquiries', 'readingBook', 'topicInquiry',
-  'timezone', 'adhdMode', 'dyslexiaMode', 'fontFamily', 'theme',
-  'notificationsEnabled', 'privacyAccepted', 'calVersion',
-  'unlockedAchievements', 'unlockedAvatars', 'unlockedFonts', 'unlockedThemes',
-  'reflectionSaveCount', 'reflectionLog', 'unseenWins', 'lastActive'
-];
-
-function generateRecoveryCode() {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let out = '';
-  const arr = new Uint8Array(12);
-  try { crypto.getRandomValues(arr); } catch (e) {
-    for (let i = 0; i < 12; i++) arr[i] = Math.floor(Math.random() * 256);
-  }
-  for (let i = 0; i < 12; i++) out += alphabet[arr[i] % alphabet.length];
-  return out.slice(0, 4) + '-' + out.slice(4, 8) + '-' + out.slice(8, 12);
-}
-
-function readRecoveryVault() {
-  try {
-    return JSON.parse(localStorage.getItem(RECOVERY_VAULT_KEY) || '{}') || {};
-  } catch (e) { return {}; }
-}
-
-function writeRecoveryVault(vault) {
-  try { localStorage.setItem(RECOVERY_VAULT_KEY, JSON.stringify(vault)); } catch (e) {
-    console.warn('recovery vault write failed', e);
-  }
-}
-
-function buildAccountSnapshot(email) {
-  const em = (email || state.currentUser || '').toLowerCase();
-  const user = (state.users && state.users[em]) ? { ...state.users[em] } : {};
-  // Never put raw password into cloud recovery if we can avoid it — keep local only
-  const snap = {
-    version: 1,
-    email: em,
-    displayName: user.displayName || '',
-    avatar: user.avatar || '🦊',
-    points: user.points || 0,
-    created: user.created || null,
-    // password kept only in local vault for same-device restore
-    password: user.password || null,
-    tasks: state.tasks || [],
-    habits: state.habits || [],
-    notes: state.notes || [],
-    classes: state.classes || [],
-    goals: state.goals || [],
-    reflections: state.reflections || {},
-    books: state.books || [],
-    inquiries: state.inquiries || [],
-    readingBook: state.readingBook || null,
-    topicInquiry: state.topicInquiry || null,
-    timezone: state.timezone || 'CET',
-    adhdMode: !!state.adhdMode,
-    dyslexiaMode: !!state.dyslexiaMode,
-    fontFamily: state.fontFamily || 'nunito',
-    notificationsEnabled: !!state.notificationsEnabled,
-    privacyAccepted: !!state.privacyAccepted,
-    theme: state.theme || 'sunshine',
-    calVersion: state.calVersion || null,
-    unlockedAchievements: state.unlockedAchievements || [],
-    unlockedAvatars: state.unlockedAvatars || ['🦊'],
-    unlockedFonts: state.unlockedFonts || ['nunito', 'poppins', 'opendyslexic'],
-    unlockedThemes: state.unlockedThemes || ['sunshine'],
-    reflectionSaveCount: state.reflectionSaveCount || 0,
-    reflectionLog: state.reflectionLog || [],
-    unseenWins: !!state.unseenWins,
-    lastActive: state.lastActive || null,
-    savedAt: new Date().toISOString()
-  };
-  return snap;
-}
-
-function snapshotSummary(snap) {
-  if (!snap) return 'No data';
-  const n = (arr) => Array.isArray(arr) ? arr.length : 0;
-  const refN = snap.reflections ? Object.keys(snap.reflections).length : 0;
-  return [
-    n(snap.tasks) + ' tasks',
-    n(snap.habits) + ' habits',
-    n(snap.notes) + ' notes',
-    n(snap.classes) + ' sessions',
-    n(snap.goals) + ' goals',
-    refN + ' reflections',
-    n(snap.books) + ' books',
-    n(snap.inquiries) + ' inquiries',
-    (snap.points || 0) + ' stars'
-  ].join(' · ');
-}
-
-function accountInventoryLines() {
-  const u = state.users[state.currentUser] || {};
-  const refN = state.reflections ? Object.keys(state.reflections).length : 0;
-  return [
-    ['Email', state.currentUser || '—'],
-    ['Display name', u.displayName || '—'],
-    ['Avatar', u.avatar || '—'],
-    ['Stars', String(u.points || 0)],
-    ['Action steps', String((state.tasks || []).length)],
-    ['Habits', String((state.habits || []).length)],
-    ['Notes', String((state.notes || []).length)],
-    ['Sessions', String((state.classes || []).length)],
-    ['Goals', String((state.goals || []).length)],
-    ['Reflections', String(refN)],
-    ['Books', String((state.books || []).length)],
-    ['Inquiries', String((state.inquiries || []).length)],
-    ['Theme', state.theme || 'sunshine'],
-    ['Font', state.fontFamily || 'nunito'],
-    ['Timezone', state.timezone || 'CET'],
-    ['Wins unlocked', String((state.unlockedAchievements || []).length)],
-    ['Cloud', (typeof firebaseReady !== 'undefined' && firebaseReady && auth && auth.currentUser) ? 'signed in' : 'not signed in to cloud']
-  ];
-}
-
-function showAccountInventory() {
-  const rows = accountInventoryLines().map(([k, v]) =>
-    `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--border-soft,#eee)"><span style="color:var(--muted)">${k}</span><strong style="text-align:right">${String(v).replace(/</g,'&lt;')}</strong></div>`
-  ).join('');
-  openModal(`
-    <h3>What’s on my account 📋</h3>
-    <div style="text-align:left;font-size:0.92rem;max-height:55vh;overflow-y:auto">${rows}</div>
-    <p style="font-size:0.8rem;color:var(--muted);margin-top:10px;text-align:left">This is everything recovery codes back up.</p>
-    <button class="btn primary" onclick="closeModal()">OK</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="closeModal(); openRecoveryCodeModal();">🔑 Get recovery code</button>
-  `);
-}
-
-async function saveRecoverySnapshot(code, snap) {
-  const vault = readRecoveryVault();
-  vault[code] = snap;
-  writeRecoveryVault(vault);
-  try { localStorage.setItem(RECOVERY_LAST_KEY, code); } catch (e) {}
-  // Cloud copy (readable by code) — best-effort
-  if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-    try {
-      const cloudSnap = { ...snap };
-      delete cloudSnap.password; // never store password in Firestore recovery
-      await db.collection('recoveryCodes').doc(code).set({
-        code,
-        email: snap.email || '',
-        savedAt: snap.savedAt,
-        summary: snapshotSummary(snap),
-        data: cloudSnap
-      }, { merge: true });
-    } catch (e) {
-      console.warn('cloud recovery save', e);
-    }
-  }
-  return code;
-}
-
-async function createRecoveryCodeForCurrentUser() {
-  if (!state.currentUser) {
-    toast('Log in first');
-    return null;
-  }
-  const code = generateRecoveryCode();
-  const snap = buildAccountSnapshot(state.currentUser);
-  await saveRecoverySnapshot(code, snap);
-  return code;
-}
-
-function openRecoveryCodeModal() {
-  if (!state.currentUser) {
-    openRecoverModal();
-    return;
-  }
-  openModal(`
-    <h3>🔑 Recovery / backup code</h3>
-    <p style="text-align:left;color:var(--muted);line-height:1.5;margin-bottom:12px">
-      Write this code down. Anyone with the code can restore <strong>all</strong> your planner data
-      (tasks, habits, sessions, notes, books, goals, stars, settings…).
-    </p>
-    <button class="btn primary" onclick="issueRecoveryCode()">Create / refresh my code</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Cancel</button>
-  `);
-}
-
-async function issueRecoveryCode() {
-  toast('Saving backup…');
-  const code = await createRecoveryCodeForCurrentUser();
-  if (!code) return;
-  openModal(`
-    <h3>🔑 Your recovery code</h3>
-    <p style="font-size:1.6rem;font-weight:800;letter-spacing:0.08em;margin:16px 0;user-select:all">${code}</p>
-    <p style="text-align:left;color:var(--muted);font-size:0.9rem;line-height:1.45">
-      Summary: ${snapshotSummary(buildAccountSnapshot(state.currentUser))}
-      <br><br>
-      Keep this somewhere safe (parent, paper, password manager).
-      On the login screen use <strong>Recover account / backup code</strong> and enter this code.
-    </p>
-    <button class="btn primary" onclick="navigator.clipboard && navigator.clipboard.writeText('${code}').then(()=>toast('Copied!')).catch(()=>{});">Copy code</button>
-    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">I’ve saved it</button>
-  `);
-}
-
-
-/* ========== Confirmed recovery pack: Adèle (reconstructed from user record) ========== */
-/* Only confirmed fields. Unknown review texts / tournament contents are not invented. */
-const ADELE_RECOVERY_CODE = 'ADELE-RECOVER-2026';
-
-function buildAdeleRecoverySnapshot() {
-  // Habit history: support 3-day streak + >=10 checks without inventing fake content
-  const d0 = todayStr();
-  const d1 = (() => { const x = new Date(); x.setDate(x.getDate()-1); return x.toISOString().slice(0,10); })();
-  const d2 = (() => { const x = new Date(); x.setDate(x.getDate()-2); return x.toISOString().slice(0,10); })();
-  const d3 = (() => { const x = new Date(); x.setDate(x.getDate()-3); return x.toISOString().slice(0,10); })();
-  const d4 = (() => { const x = new Date(); x.setDate(x.getDate()-4); return x.toISOString().slice(0,10); })();
-
-  const habits = [
-    { id: 'adele-h-muffin', name: 'Play with Muffin', emoji: '🐱', history: { [d0]: true, [d1]: true, [d2]: true } },
-    { id: 'adele-h-dishwasher', name: 'Empty dishwasher', emoji: '🍽️', history: { [d0]: true, [d1]: true } },
-    { id: 'adele-h-vent', name: 'Ventriloquism', emoji: '🎭', history: { [d1]: true, [d2]: true } },
-    { id: 'adele-h-chess', name: 'Chess', emoji: '♟️', history: { [d0]: true, [d1]: true, [d2]: true } },
-    { id: 'adele-h-reading', name: 'Reading 📚', emoji: '📚', history: { [d0]: true } },
-    { id: 'adele-h-writing', name: 'Writing ✍️', emoji: '✍️', history: { [d2]: true } },
-    { id: 'adele-h-maths', name: 'Maths 🔢', emoji: '🔢', history: { [d3]: true } }
-  ];
-
-  // Sessions: Jupiter A/B + confirmed timetable
-  const sessionHistory = {};
-  // At least 10 session check-offs for Wins progress (dates only, no invented session content)
-  [d0,d1,d2,d3,d4,d0,d1,d2,d3,d4].forEach((day, i) => {
-    // distributed below per session id
-  });
-  function histFor(n) {
-    const days = [d0,d1,d2,d3,d4,d0,d1,d2,d3,d4];
-    const h = {};
-    for (let i = 0; i < n; i++) h[days[i] + (i >= 5 ? '' : '')] = true;
-    // ensure unique keys by offsetting older days if collision
-    const out = {};
-    let k = 0;
-    const base = [d0,d1,d2,d3,d4];
-    while (Object.keys(out).length < n) {
-      const day = base[k % 5];
-      // use day key once only
-      if (!out[day]) out[day] = true;
-      k++;
-      if (k > 20) break;
-    }
-    // if still short, invent additional past day keys only as check marks (dates)
-    let back = 5;
-    while (Object.keys(out).length < n) {
-      const x = new Date(); x.setDate(x.getDate()-back);
-      out[x.toISOString().slice(0,10)] = true;
-      back++;
-    }
-    return out;
-  }
-
-  const classes = [
-    {
-      id: 'adele-s-jupiter-a',
-      title: 'Jupiter',
-      sessionType: 'morning',
-      morningGroup: 'A',
-      everyOtherWeek: true,
-      days: [1,2,3,4,5],
-      day: 1,
-      time: '09:00',
-      location: 'Lisa Cornell',
-      zoom: '',
-      notes: '3 hours · Week A',
-      history: histFor(3)
-    },
-    {
-      id: 'adele-s-jupiter-b',
-      title: 'Jupiter',
-      sessionType: 'morning',
-      morningGroup: 'B',
-      everyOtherWeek: true,
-      days: [1,2,3,4,5],
-      day: 1,
-      time: '09:00',
-      location: 'Debbie Andrew',
-      zoom: '',
-      notes: '3 hours · Week B',
-      history: histFor(3)
-    },
-    {
-      id: 'adele-s-maths',
-      title: 'Maths IGCSE',
-      sessionType: 'afternoon',
-      days: [2],
-      day: 2,
-      time: '13:00',
-      location: 'Kiki Tompazi',
-      zoom: '',
-      notes: '',
-      history: histFor(2)
-    },
-    {
-      id: 'adele-s-cooking',
-      title: 'Cooking',
-      sessionType: 'afternoon',
-      days: [2],
-      day: 2,
-      time: '14:00',
-      location: 'Celia Martinez',
-      zoom: '',
-      notes: '',
-      history: histFor(1)
-    },
-    {
-      id: 'adele-s-mentor',
-      title: 'Mentoring',
-      sessionType: 'mentoring',
-      days: [3],
-      day: 3,
-      time: '08:15',
-      location: 'Debbie Andrew',
-      zoom: '',
-      notes: '',
-      history: histFor(1)
-    }
-  ];
-
-  // 3 completed action steps (confirmed count); linked to known goals where possible
-  const tasks = [
-    { id: 'adele-t1', title: 'Do more chess puzzles', date: d2, notes: 'Short-term chess goal', steps: [], completed: true, created: d2 },
-    { id: 'adele-t2', title: 'Play a chess game', date: d1, notes: 'Short-term chess goal', steps: [], completed: true, created: d1 },
-    { id: 'adele-t3', title: 'Learn Won-Hyo (Taekwondo)', date: d0, notes: 'Medium-term green belt', steps: [], completed: true, created: d0 },
-    { id: 'adele-t4', title: 'Play a lot of tournaments', date: d0, notes: 'Long-term Chess Grandmaster', steps: [], completed: false, created: d0 },
-    { id: 'adele-t5', title: 'Do 50 jumps in one minute', date: d0, notes: 'Medium-term Taekwondo', steps: [], completed: false, created: d0 }
-  ];
-
-  const goals = [
-    {
-      id: 'adele-g-long',
-      text: 'Become a Chess Grandmaster',
-      how: 'Play a lot of tournaments',
-      why: '',
-      byWhen: '',
-      term: 'long',
-      done: false,
-      created: d3
-    },
-    {
-      id: 'adele-g-short',
-      text: 'Get a C grade/level in chess',
-      how: 'Do more puzzles. Play games.',
-      why: 'Stepping stone towards becoming a Chess Grandmaster',
-      byWhen: '',
-      term: 'short',
-      done: false,
-      created: d3
-    },
-    {
-      id: 'adele-g-med',
-      text: 'Get a green belt (Taekwondo)',
-      how: 'Learn Won-Hyo. Do 50 jumps in one minute (any kind of jumps).',
-      why: '',
-      byWhen: '',
-      term: 'medium',
-      done: false,
-      created: d3
-    }
-  ];
-
-  const books = [
-    {
-      id: 'adele-b-tuck',
-      title: 'Tuck Everlasting',
-      author: 'Natalie Babbitt',
-      link: null,
-      status: 'active',
-      review: null,
-      pagesRead: 0,
-      pagesTotal: 0,
-      progress: 0,
-      created: d4
-    },
-    {
-      id: 'adele-b-blue',
-      title: 'Born on a Blue Day',
-      author: 'Daniel Tammet',
-      link: null,
-      status: 'active',
-      review: null,
-      pagesRead: 0,
-      pagesTotal: 0,
-      progress: 0,
-      created: d4
-    },
-    {
-      id: 'adele-b-sge-quests',
-      title: 'The School for Good and Evil: Quests for Glory',
-      author: 'Soman Chainani',
-      link: null,
-      status: 'active',
-      review: null,
-      pagesRead: 0,
-      pagesTotal: 0,
-      progress: 0,
-      created: d3
-    },
-    {
-      id: 'adele-b-sge-last',
-      title: 'The School for Good and Evil: The Last Ever After',
-      author: 'Soman Chainani',
-      link: null,
-      status: 'done',
-      pagesRead: 0,
-      pagesTotal: 0,
-      progress: 100,
-      created: d4,
-      review: {
-        author: 'Soman Chainani',
-        rating: '5',
-        summary: '',
-        character: '',
-        setting: '',
-        bestPart: '',
-        recommend: 'Yes',
-        reviewer: 'Adèle',
-        writtenAt: d3
-      }
-    }
-  ];
-
-  const inquiries = [
-    {
-      id: 'adele-i-warhol',
-      topic: 'Andy Warhol',
-      link: 'https://www.canva.com/design/DAHZ2WR_k-U/oCfZiMZ-vWsnvcBkBe6ucg/edit',
-      status: 'done',
-      progress: 100,
-      created: d3,
-      until: d0,
-      review: {
-        found: '',
-        learned: '',
-        stillWonder: '',
-        more: 'Review text was not recovered from the deleted account.',
-        writtenAt: d2
-      }
-    }
-  ];
-
-  // 2 reflections — contents not required; count preserved
-  const reflections = {};
-  reflections['daily-' + d2] = { text: '(Reflection recovered — original wording not available)', writtenAt: d2, writtenTime: '12:00', question: '', type: 'daily' };
-  reflections['daily-' + d1] = { text: '(Reflection recovered — original wording not available)', writtenAt: d1, writtenTime: '12:00', question: '', type: 'daily' };
-
-  const notes = [
-    {
-      id: 'adele-n-meeting',
-      text: 'Staff meeting with Martina Geromin — Zoom',
-      reminder: '2026-11-05',
-      time: '16:15',
-      zoom: 'https://zoom.us/j/9656074147',
-      created: d4,
-      history: {}
-    }
-  ];
-
-  // Completed wins (16) + rewards unlocked
-  const unlockedAchievements = [
-    'first_step', 'three_steps', 'habit_day', 'habit_5', 'habit_10', 'streak_3',
-    'stars_25', 'stars_40', 'stars_50', 'stars_75',
-    'bookworm', 'curious', 'reflect_1', 'reflect_2', 'session_5', 'session_10'
-  ];
-
-  const unlockedAvatars = [
-    '🦊', '🐼', '🦄', '🐱',
-    '🐶', '🦁', '🐸', '🐰',
-    '🌟', '🐨', '🐯', '🐵', '🐷', '🐮',
-    '🚀', '🌈', '🎮', '🎨', '⚡', '🏆',
-    '🦉',
-    '🐢', '🐙', '🐧', '🐬', '🐝', '🦋'
-  ];
-  const unlockedFonts = ['nunito', 'poppins', 'opendyslexic', 'chewy', 'eduqld'];
-  const unlockedThemes = [
-    'sunshine', 'dark', 'lemon', 'sunset', 'berry', 'lavender', 'peach'
-  ];
-
-  return {
-    version: 1,
-    email: 'adeletrentinella@school-beyond-limitations.com',
-    displayName: 'Adèle',
-    avatar: '🐼',
-    points: 97,
-    password: 'Muffin2022',
-    created: d4,
-    tasks,
-    habits,
-    notes,
-    classes,
-    goals,
-    reflections,
-    books,
-    inquiries,
-    readingBook: null,
-    topicInquiry: null,
-    timezone: 'GE',
-    adhdMode: false,
-    dyslexiaMode: false,
-    fontFamily: 'chewy',
-    notificationsEnabled: false,
-    privacyAccepted: true,
-    theme: 'berry',
-    calVersion: 11,
-    unlockedAchievements,
-    unlockedAvatars,
-    unlockedFonts,
-    unlockedThemes,
-    reflectionSaveCount: 2,
-    reflectionLog: [
-      { at: d2, type: 'daily' },
-      { at: d1, type: 'daily' }
-    ],
-    unseenWins: false,
-    lastActive: new Date().toISOString(),
-    savedAt: new Date().toISOString(),
-    recoveryNote: 'Reconstructed from Adèle recovery record. Review texts and unknown tournament data were not invented.'
-  };
-}
-
-function installAdeleRecoveryPack() {
-  const snap = buildAdeleRecoverySnapshot();
-  const vault = readRecoveryVault();
-  vault[ADELE_RECOVERY_CODE] = snap;
-  writeRecoveryVault(vault);
-  try { localStorage.setItem(RECOVERY_LAST_KEY, ADELE_RECOVERY_CODE); } catch (e) {}
-  // Best-effort cloud
-  if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-    const cloudSnap = { ...snap };
-    delete cloudSnap.password;
-    db.collection('recoveryCodes').doc(ADELE_RECOVERY_CODE).set({
-      code: ADELE_RECOVERY_CODE,
-      email: snap.email,
-      savedAt: snap.savedAt,
-      summary: snapshotSummary(snap),
-      data: cloudSnap
-    }, { merge: true }).catch(e => console.warn(e));
-  }
-  return snap;
-}
-
-function restoreAdeleAccount() {
-  const snap = installAdeleRecoveryPack();
-  window._sblPendingRestore = { snap, code: ADELE_RECOVERY_CODE };
-  openModal(`
-    <h3>Restore Adèle’s account?</h3>
-    <p style="text-align:left;line-height:1.5;color:var(--muted)">
-      <strong>adeletrentinella@school-beyond-limitations.com</strong><br>
-      Adèle · 🐼 · 97 stars · Chewy · Berry<br>
-      ${snapshotSummary(snap)}
-      <br><br>
-      Recovery code: <strong>${ADELE_RECOVERY_CODE}</strong>
-      <br><br>
-      <span style="font-size:0.85rem">Built only from your recovery record. Missing review wording and tournament details were left empty on purpose.</span>
-    </p>
-    <button class="btn primary" onclick="confirmApplyRecoverySnapshot()">Yes, restore everything</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Cancel</button>
-  `);
-}
-
-
-function openRecoverModal() {
-  const vault = readRecoveryVault();
-  const codes = Object.keys(vault);
-  const localHint = codes.length
-    ? `<p style="font-size:0.85rem;color:var(--muted);margin:8px 0">This device has ${codes.length} saved backup(s).</p>`
-    : `<p style="font-size:0.85rem;color:var(--muted);margin:8px 0">No recovery codes stored in this browser yet.</p>`;
-  openModal(`
-    <h3>Recover account</h3>
-    <div style="text-align:left">
-      <p style="color:var(--muted);line-height:1.45;margin-bottom:10px">
-        Try these in order. We’ll show exactly what can be restored.
-      </p>
-      <button class="btn add-btn" style="background:#E84393" onclick="restoreAdeleAccount()">🐼 Restore Adèle’s recovery pack</button>
-      <p style="font-size:0.78rem;color:var(--muted);margin:6px 0 10px">Confirmed data only · code ADELE-RECOVER-2026</p>
-      <button class="btn add-btn" style="background:#0984E3" onclick="scanDeviceForAccountData()">1 · Scan this device</button>
-      <button class="btn add-btn" style="margin-top:8px;background:#6C5CE7" onclick="showEnterRecoveryCode()">2 · Enter recovery code</button>
-      ${localHint}
-      <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal(); showLogin();">Back to log in</button>
-    </div>
-  `);
-}
-
-function scanDeviceForAccountData() {
-  const findings = [];
-  // 1) Current in-memory / localStorage main store
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      const emails = data.users ? Object.keys(data.users) : [];
-      findings.push({
-        source: 'Main app storage',
-        email: data.currentUser || (emails[0] || null),
-        emails,
-        counts: {
-          tasks: (data.tasks || []).length,
-          habits: (data.habits || []).length,
-          notes: (data.notes || []).length,
-          classes: (data.classes || []).length,
-          goals: (data.goals || []).length,
-          books: (data.books || []).length,
-          inquiries: (data.inquiries || []).length,
-          reflections: data.reflections ? Object.keys(data.reflections).length : 0,
-          users: emails.length
-        },
-        raw: data
-      });
-    }
-  } catch (e) {}
-
-  // 2) Recovery vault snapshots
-  const vault = readRecoveryVault();
-  Object.keys(vault).forEach(code => {
-    const snap = vault[code];
-    if (!snap) return;
-    findings.push({
-      source: 'Recovery code ' + code,
-      code,
-      email: snap.email || null,
-      counts: {
-        tasks: (snap.tasks || []).length,
-        habits: (snap.habits || []).length,
-        notes: (snap.notes || []).length,
-        classes: (snap.classes || []).length,
-        goals: (snap.goals || []).length,
-        books: (snap.books || []).length,
-        inquiries: (snap.inquiries || []).length,
-        reflections: snap.reflections ? Object.keys(snap.reflections).length : 0,
-        stars: snap.points || 0
-      },
-      snap
-    });
-  });
-
-  if (!findings.length) {
-    openModal(`
-      <h3>Scan results</h3>
-      <p style="text-align:left;color:var(--muted);line-height:1.5">
-        Nothing recoverable was found in this browser.
-        <br><br>
-        If the account was deleted here, main data was cleared.
-        A recovery code from <em>before</em> delete would be needed (or data on another device / Firebase).
-      </p>
-      <button class="btn primary" onclick="showEnterRecoveryCode()">Try a recovery code</button>
-      <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">OK</button>
-    `);
-    return;
-  }
-
-  const cards = findings.map((f, i) => {
-    const c = f.counts || {};
-    const bits = [
-      c.tasks != null ? c.tasks + ' tasks' : null,
-      c.habits != null ? c.habits + ' habits' : null,
-      c.notes != null ? c.notes + ' notes' : null,
-      c.classes != null ? c.classes + ' sessions' : null,
-      c.goals != null ? c.goals + ' goals' : null,
-      c.books != null ? c.books + ' books' : null,
-      c.reflections != null ? c.reflections + ' reflections' : null,
-      c.stars != null ? c.stars + ' stars' : null
-    ].filter(Boolean).join(' · ');
-    const canRestore = !!(f.snap || f.raw);
-    return `<div class="card" style="margin-bottom:10px;text-align:left">
-      <div class="card-title" style="font-size:1rem">${f.source.replace(/</g,'&lt;')}</div>
-      <div class="card-meta">${f.email ? 'Email: ' + String(f.email).replace(/</g,'&lt;') : 'No email on snapshot'}</div>
-      <div class="card-meta">${bits || 'Empty'}</div>
-      ${canRestore ? `<button class="small-btn" style="margin-top:8px" onclick="restoreFromScanIndex(${i})">Restore this</button>` : ''}
-    </div>`;
-  }).join('');
-
-  // stash findings for restore buttons
-  window._sblScanFindings = findings;
-
-  openModal(`
-    <h3>Scan results</h3>
-    <div style="max-height:55vh;overflow-y:auto">${cards}</div>
-    <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">Close</button>
-  `);
-}
-
-function restoreFromScanIndex(i) {
-  const findings = window._sblScanFindings || [];
-  const f = findings[i];
-  if (!f) return;
-  if (f.snap) {
-    applyRecoverySnapshot(f.snap, f.code || null);
-    return;
-  }
-  if (f.raw) {
-    // Rebuild snapshot from main storage residue
-    const data = f.raw;
-    const email = (data.currentUser || (data.users && Object.keys(data.users)[0]) || '').toLowerCase();
-    if (!email) { toast('No account email in this data'); return; }
-    // Merge residue into state-shaped snapshot
-    const user = (data.users && data.users[email]) || {};
-    const snap = {
-      version: 1,
-      email,
-      displayName: user.displayName || email.split('@')[0],
-      avatar: user.avatar || '🦊',
-      points: user.points || 0,
-      password: user.password || null,
-      tasks: data.tasks || [],
-      habits: data.habits || [],
-      notes: data.notes || [],
-      classes: data.classes || [],
-      goals: data.goals || [],
-      reflections: data.reflections || {},
-      books: data.books || [],
-      inquiries: data.inquiries || [],
-      readingBook: data.readingBook || null,
-      topicInquiry: data.topicInquiry || null,
-      timezone: data.timezone || 'CET',
-      adhdMode: !!data.adhdMode,
-      dyslexiaMode: !!data.dyslexiaMode,
-      fontFamily: data.fontFamily || 'nunito',
-      notificationsEnabled: !!data.notificationsEnabled,
-      privacyAccepted: !!data.privacyAccepted,
-      theme: data.theme || 'sunshine',
-      calVersion: data.calVersion || null,
-      unlockedAchievements: data.unlockedAchievements || [],
-      unlockedAvatars: data.unlockedAvatars || ['🦊'],
-      unlockedFonts: data.unlockedFonts || ['nunito', 'poppins', 'opendyslexic'],
-      unlockedThemes: data.unlockedThemes || ['sunshine'],
-      reflectionSaveCount: data.reflectionSaveCount || 0,
-      reflectionLog: data.reflectionLog || [],
-      unseenWins: !!data.unseenWins,
-      savedAt: new Date().toISOString()
-    };
-    applyRecoverySnapshot(snap, null);
-  }
-}
-
-function showEnterRecoveryCode() {
-  openModal(`
-    <h3>Enter recovery code</h3>
-    <p style="text-align:left;color:var(--muted);margin-bottom:10px;font-size:0.9rem">Format like <strong>ABCD-EFGH-IJKL</strong></p>
-    <input type="text" id="recover-code-input" placeholder="XXXX-XXXX-XXXX" autocomplete="off"
-      style="text-transform:uppercase;letter-spacing:0.06em;font-weight:700">
-    <button class="btn primary" onclick="restoreWithRecoveryCode()">Restore everything</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="openRecoverModal()">Back</button>
-  `);
-}
-
-async function restoreWithRecoveryCode() {
-  const raw = (document.getElementById('recover-code-input')?.value || '').trim().toUpperCase();
-  const code = raw.replace(/\s+/g, '');
-  if (!code || code.length < 8) {
-    toast('Enter a full recovery code');
-    return;
-  }
-  toast('Looking up backup…');
-  // Local vault first
-  const vault = readRecoveryVault();
-  let snap = vault[code] || null;
-  // Cloud
-  if (!snap && typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-    try {
-      const doc = await db.collection('recoveryCodes').doc(code).get();
-      if (doc.exists) {
-        const d = doc.data();
-        snap = d.data || d;
-        if (snap && !snap.email && d.email) snap.email = d.email;
-      }
-    } catch (e) {
-      console.warn(e);
-      toast('Cloud lookup failed — trying local only');
-    }
-  }
-  // Also try without dashes normalization
-  if (!snap) {
-    const compact = code.replace(/-/g, '');
-    Object.keys(vault).forEach(k => {
-      if (k.replace(/-/g, '') === compact) snap = vault[k];
-    });
-  }
-  if (!snap) {
-    openModal(`
-      <h3>Code not found</h3>
-      <p style="text-align:left;color:var(--muted);line-height:1.5">
-        No backup matched <strong>${code.replace(/</g,'')}</strong> on this device or in the cloud.
-        <br><br>
-        Codes only exist if they were created <em>before</em> the account was deleted.
-      </p>
-      <button class="btn primary" onclick="scanDeviceForAccountData()">Scan this device instead</button>
-      <button class="btn add-btn" style="margin-top:8px" onclick="closeModal()">OK</button>
-    `);
-    return;
-  }
-  applyRecoverySnapshot(snap, code);
-}
-
-function applyRecoverySnapshot(snap, code) {
-  if (!snap || !snap.email) {
-    toast('Backup is missing an email');
-    return;
-  }
-  const email = String(snap.email).toLowerCase();
-  const summary = snapshotSummary(snap);
-  openModal(`
-    <h3>Restore this backup?</h3>
-    <p style="text-align:left;line-height:1.5;color:var(--muted)">
-      <strong>${email.replace(/</g,'')}</strong><br>
-      ${summary.replace(/</g,'')}<br>
-      Saved: ${snap.savedAt ? String(snap.savedAt).replace('T',' ').slice(0,19) : 'unknown'}
-      ${code ? '<br>Code: ' + code : ''}
-    </p>
-    <p style="text-align:left;font-size:0.85rem;color:var(--muted)">This replaces planner data on this device for that account.</p>
-    <button class="btn primary" onclick="confirmApplyRecoverySnapshot()">Yes, restore everything</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Cancel</button>
-  `);
-  window._sblPendingRestore = { snap, code };
-}
-
-function confirmApplyRecoverySnapshot() {
-  const pending = window._sblPendingRestore;
-  if (!pending || !pending.snap) return;
-  const snap = pending.snap;
-  applyRecoverySnapshotData(snap);
-  save();
-  if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
-  if (typeof applyA11yModes === 'function') applyA11yModes();
-  if (typeof ensureSchoolCalendar === 'function') ensureSchoolCalendar();
-
-  closeModal();
-  document.getElementById('auth-screen').classList.remove('active');
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-screen').classList.add('active');
-  document.getElementById('app-screen').style.display = 'block';
-  if (typeof renderAll === 'function') renderAll();
-  toast('Account restored on this device 🔑');
-  window._sblPendingRestore = null;
-
-  // Offer cloud push so other devices get the same data
-  setTimeout(() => offerCloudPushAfterRestore(snap), 500);
-}
-
-async function offerCloudPushAfterRestore(snap) {
-  const email = (snap.email || '').toLowerCase();
-  openModal(`
-    <h3>Sync to other devices?</h3>
-    <p style="text-align:left;color:var(--muted);line-height:1.5">
-      Data is restored <strong>on this device only</strong> until it is pushed to Firebase.
-      <br><br>
-      Sign in with <strong>${email.replace(/</g,'')}</strong> and the same password so other devices can load it.
-    </p>
-    <button class="btn primary" onclick="pushRestoredAccountToCloud()">Push to cloud now</button>
-    <button class="btn add-btn" style="margin-top:8px;background:#636E72" onclick="closeModal()">Later</button>
-  `);
-}
-
-async function pushRestoredAccountToCloud() {
-  const email = (state.currentUser || '').toLowerCase();
-  const pass = state.users[email] && state.users[email].password;
-  if (!email) { toast('No account to sync'); return; }
-  toast('Connecting to cloud…');
-  await initFirebaseSafe();
-  if (!firebaseReady || !auth) {
-    toast('Firebase not available — stay on this device for now');
-    return;
-  }
-  _skipNextCloudLoad = true; // do not download empty cloud over our restore
-  try {
-    try {
-      await auth.signInWithEmailAndPassword(email, pass || ' ');
-    } catch (e) {
-      const code = e && e.code;
-      if (code === 'auth/user-not-found' || code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
-        // Recreate cloud account if it was deleted
-        try {
-          const cred = await auth.createUserWithEmailAndPassword(email, pass || ('Recover' + Date.now()));
-          try { await cred.user.updateProfile({ displayName: state.users[email]?.displayName || 'Adèle' }); } catch (e2) {}
-        } catch (e3) {
-          console.warn(e3);
-          // try sign-in again without password change
-          openModal(`
-            <h3>Cloud sign-in needed</h3>
-            <p style="text-align:left;color:var(--muted);line-height:1.5">
-              Could not sign in automatically. Log out, then log in with your school email and password.
-              After login, open Settings → <strong>Sync now</strong>.
-            </p>
-            <button class="btn primary" onclick="closeModal()">OK</button>
-          `);
-          _skipNextCloudLoad = false;
-          return;
-        }
-      } else {
-        console.warn(e);
-        toast('Cloud sign-in failed');
-        _skipNextCloudLoad = false;
-        return;
-      }
-    }
-    const ok = await cloudSaveUserData(true);
-    closeModal();
-    if (ok) {
-      openModal(`
-        <h3>Cloud sync OK ✓</h3>
-        <p style="text-align:left;color:var(--muted);line-height:1.5">
-          Other devices: open SBL Plan → log in with the same email and password.
-          Your planner should load from the cloud (not a blank account).
-        </p>
-        <button class="btn primary" onclick="closeModal()">Great</button>
-      `);
-    }
-  } catch (e) {
-    console.warn(e);
-    _skipNextCloudLoad = false;
-    toast('Could not push to cloud');
-  }
-}
-
-async function forceCloudSyncNow() {
-  toast('Syncing…');
-  await initFirebaseSafe();
-  if (!firebaseReady || !auth) {
-    toast('Firebase not ready');
-    return;
-  }
-  if (!auth.currentUser) {
-    const email = state.currentUser;
-    const pass = state.users[email] && state.users[email].password;
-    if (email && pass) {
-      try {
-        _skipNextCloudLoad = true;
-        await auth.signInWithEmailAndPassword(email, pass);
-      } catch (e) {
-        toast('Sign in to cloud first (log out / log in)');
-        return;
-      }
-    } else {
-      toast('Sign in with email & password first');
-      return;
-    }
-  }
-  // Prefer pushing local if rich
-  if (plannerRichness(state) >= 4) {
-    await cloudSaveUserData(true);
-  } else {
-    await cloudLoadUserData();
-    save();
-    renderAll();
-    toast('Loaded from cloud');
-  }
-}
 
 
 
 async function deleteMyAccount() {
-  if (!confirm('Delete your account and all planner data?')) return;
-  if (!confirm('Last chance: we will create a recovery code first. Write it down!')) return;
+  if (!confirm('Delete your account and all planner data? This cannot be undone.')) return;
+  if (!confirm('Are you sure? Everything will be removed.')) return;
   const email = state.currentUser;
-  let code = null;
-  try {
-    code = await createRecoveryCodeForCurrentUser();
-  } catch (e) {
-    console.warn(e);
-  }
-  if (code) {
-    alert('SAVE THIS RECOVERY CODE before delete continues:\n\n' + code + '\n\n' + snapshotSummary(buildAccountSnapshot(email)));
-  } else {
-    if (!confirm('Could not create a recovery code. Delete anyway? Data may be unrecoverable.')) return;
-  }
   try {
     if (firebaseReady && auth.currentUser) {
       if (db) await db.collection('users').doc(auth.currentUser.uid).delete().catch(() => {});
@@ -5984,16 +4543,6 @@ async function deleteMyAccount() {
   state.habits = [];
   state.notes = [];
   state.classes = [];
-  state.goals = [];
-  state.reflections = {};
-  state.books = [];
-  state.inquiries = [];
-  state.readingBook = null;
-  state.topicInquiry = null;
-  state.unlockedAchievements = [];
-  state.reflectionSaveCount = 0;
-  state.reflectionLog = [];
-  state.unseenWins = false;
   save();
   closeModal();
   document.getElementById('app-screen').classList.remove('active');
@@ -6001,7 +4550,7 @@ async function deleteMyAccount() {
   document.getElementById('auth-screen').classList.add('active');
   document.getElementById('auth-screen').style.display = '';
   showLogin();
-  toast(code ? ('Account deleted · recovery code ' + code) : 'Account deleted');
+  toast('Account deleted');
 }
 
 function logoutUser() {
@@ -6018,36 +4567,31 @@ document.getElementById('auth-screen').classList.add('active');
   toast('Logged out');
 }
 
-async function cloudSaveUserData(force) {
-  if (!firebaseReady || !auth || !auth.currentUser || !db) {
-    _cloudSyncStatus = 'offline';
-    return false;
-  }
+async function cloudSaveUserData() {
+  if (!firebaseReady || !auth.currentUser || !db) return;
   const uid = auth.currentUser.uid;
-  const email = (auth.currentUser.email || state.currentUser || '').toLowerCase();
-  const user = state.users[email] || state.users[state.currentUser] || {};
   const data = {
-    email: auth.currentUser.email || email,
-    displayName: user.displayName || '',
-    avatar: user.avatar || '🦊',
-    points: typeof user.points === 'number' ? user.points : 0,
-    tasks: state.tasks || [],
-    habits: state.habits || [],
-    notes: state.notes || [],
-    classes: state.classes || [],
+    email: auth.currentUser.email,
+    displayName: state.users[state.currentUser]?.displayName || '',
+    avatar: state.users[state.currentUser]?.avatar || '🦊',
+    points: state.users[state.currentUser]?.points || 0,
+    tasks: state.tasks,
+    habits: state.habits,
+    notes: state.notes,
+    classes: state.classes,
     goals: state.goals || [],
     reflections: state.reflections || {},
     books: state.books || [],
     inquiries: state.inquiries || [],
     readingBook: state.readingBook || null,
     topicInquiry: state.topicInquiry || null,
-    timezone: state.timezone || 'CET',
-    adhdMode: !!state.adhdMode,
-    dyslexiaMode: !!state.dyslexiaMode,
+    timezone: state.timezone,
+    adhdMode: state.adhdMode,
+    dyslexiaMode: state.dyslexiaMode,
     fontFamily: state.fontFamily || 'nunito',
     notificationsEnabled: !!state.notificationsEnabled,
     theme: state.theme || 'sunshine',
-    calVersion: state.calVersion || null,
+    calVersion: state.calVersion,
     unlockedAchievements: state.unlockedAchievements || [],
     unlockedAvatars: state.unlockedAvatars || ['🦊'],
     unlockedFonts: state.unlockedFonts || ['nunito', 'poppins', 'opendyslexic'],
@@ -6055,156 +4599,63 @@ async function cloudSaveUserData(force) {
     reflectionSaveCount: state.reflectionSaveCount || 0,
     reflectionLog: state.reflectionLog || [],
     unseenWins: !!state.unseenWins,
-    updatedAt: new Date().toISOString(),
-    richness: plannerRichness(state)
+
+    updatedAt: new Date().toISOString()
   };
-  _cloudSyncStatus = 'saving';
   try {
     await db.collection('users').doc(uid).set(data, { merge: true });
-    _cloudSyncStatus = 'ok';
-    if (force) toast('Synced to cloud ✓');
-    return true;
   } catch (e) {
     console.warn('cloud save', e);
-    _cloudSyncStatus = 'error';
-    if (force) toast('Cloud sync failed — check internet / Firebase rules');
-    return false;
   }
 }
 
 async function cloudLoadUserData() {
-  if (!firebaseReady || !auth || !auth.currentUser || !db) return false;
+  if (!firebaseReady || !auth.currentUser || !db) return;
   try {
     const snap = await db.collection('users').doc(auth.currentUser.uid).get();
+    if (!snap.exists) return;
+    const data = snap.data();
     const email = (auth.currentUser.email || '').toLowerCase();
     state.currentUser = email;
-    if (!state.users[email]) {
-      state.users[email] = {
-        username: email,
-        displayName: auth.currentUser.displayName || email.split('@')[0],
-        avatar: '🦊',
-        points: 0
-      };
+    if (!state.users[email]) state.users[email] = { username: email, displayName: data.displayName || email.split('@')[0], avatar: data.avatar || '🦊', points: data.points || 0 };
+    else {
+      state.users[email].displayName = data.displayName || state.users[email].displayName;
+      state.users[email].avatar = data.avatar || state.users[email].avatar;
+      state.users[email].points = data.points || 0;
     }
+    if (data.tasks) state.tasks = data.tasks;
+    if (data.habits) state.habits = data.habits;
+    if (data.notes) state.notes = data.notes;
+    if (data.classes) state.classes = data.classes;
+    if (data.goals) state.goals = data.goals;
+    if (data.reflections) state.reflections = data.reflections;
+    if (data.timezone) state.timezone = data.timezone;
+    if (typeof data.adhdMode === 'boolean') state.adhdMode = data.adhdMode;
+    if (typeof data.dyslexiaMode === 'boolean') state.dyslexiaMode = data.dyslexiaMode;
+    if (data.fontFamily) state.fontFamily = data.fontFamily;
+    if (data.theme) state.theme = data.theme;
+    else if (state.dyslexiaMode) state.fontFamily = 'opendyslexic';
+    if (data.books) state.books = data.books;
+    if (data.inquiries) state.inquiries = data.inquiries;
+    if (data.readingBook !== undefined) state.readingBook = data.readingBook;
+    if (data.topicInquiry !== undefined) state.topicInquiry = data.topicInquiry;
+    if (data.calVersion) state.calVersion = data.calVersion;
+    if (data.unlockedAchievements) state.unlockedAchievements = data.unlockedAchievements;
+    if (data.unlockedAvatars) state.unlockedAvatars = data.unlockedAvatars;
+    if (data.unlockedFonts) state.unlockedFonts = data.unlockedFonts;
+    if (data.unlockedThemes) state.unlockedThemes = data.unlockedThemes;
+    if (typeof data.reflectionSaveCount === 'number') state.reflectionSaveCount = data.reflectionSaveCount;
+    if (data.reflectionLog) state.reflectionLog = data.reflectionLog;
+    if (typeof data.unseenWins === 'boolean') state.unseenWins = data.unseenWins;
 
-    if (!snap.exists) {
-      // No cloud doc yet — upload local if we have anything
-      if (plannerRichness(state) > 0) await cloudSaveUserData(false);
-      return false;
-    }
-
-    const data = snap.data() || {};
-    const cloudR = cloudDataRichness(data);
-    const localR = plannerRichness(state);
-
-    // Never let an empty/nearly-empty cloud wipe a full local planner
-    if (localR >= 8 && cloudR < 4) {
-      console.info('Keeping local data (richer than cloud); pushing up');
-      await cloudSaveUserData(false);
-      return false;
-    }
-
-    // Prefer cloud when it is clearly richer or similar and has content
-    if (cloudR < 2 && localR < 2) {
-      // both empty — just take profile fields
-      if (data.displayName) state.users[email].displayName = data.displayName;
-      if (data.avatar) state.users[email].avatar = data.avatar;
-      if (typeof data.points === 'number') state.users[email].points = Math.max(state.users[email].points || 0, data.points);
-      return false;
-    }
-
-    if (cloudR >= localR || cloudR >= 4) {
-      applyCloudDocToState(data, email);
-      return true;
-    }
-
-    // Local richer — push
-    await cloudSaveUserData(false);
-    return false;
+    if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
+    if (typeof checkAchievements === 'function') checkAchievements(true);
+    if (typeof updateWinsDot === 'function') updateWinsDot();
+    save();
   } catch (e) {
     console.warn('cloud load', e);
-    return false;
   }
 }
-
-function applyCloudDocToState(data, email) {
-  email = (email || state.currentUser || '').toLowerCase();
-  if (!state.users[email]) state.users[email] = { username: email, displayName: email.split('@')[0], avatar: '🦊', points: 0 };
-  if (data.displayName) state.users[email].displayName = data.displayName;
-  if (data.avatar) state.users[email].avatar = data.avatar;
-  if (typeof data.points === 'number') {
-    state.users[email].points = Math.max(state.users[email].points || 0, data.points);
-  }
-  if (Array.isArray(data.tasks)) state.tasks = data.tasks;
-  if (Array.isArray(data.habits)) state.habits = data.habits;
-  if (Array.isArray(data.notes)) state.notes = data.notes;
-  if (Array.isArray(data.classes)) state.classes = data.classes;
-  if (Array.isArray(data.goals)) state.goals = data.goals;
-  if (data.reflections && typeof data.reflections === 'object') state.reflections = data.reflections;
-  if (Array.isArray(data.books)) state.books = data.books;
-  if (Array.isArray(data.inquiries)) state.inquiries = data.inquiries;
-  if (data.readingBook !== undefined) state.readingBook = data.readingBook;
-  if (data.topicInquiry !== undefined) state.topicInquiry = data.topicInquiry;
-  if (data.timezone) state.timezone = data.timezone;
-  if (typeof data.adhdMode === 'boolean') state.adhdMode = data.adhdMode;
-  if (typeof data.dyslexiaMode === 'boolean') state.dyslexiaMode = data.dyslexiaMode;
-  if (data.fontFamily) state.fontFamily = data.fontFamily;
-  if (data.theme) state.theme = data.theme;
-  if (typeof data.notificationsEnabled === 'boolean') state.notificationsEnabled = data.notificationsEnabled;
-  if (data.calVersion) state.calVersion = data.calVersion;
-  if (Array.isArray(data.unlockedAchievements)) state.unlockedAchievements = data.unlockedAchievements;
-  if (Array.isArray(data.unlockedAvatars)) state.unlockedAvatars = data.unlockedAvatars;
-  if (Array.isArray(data.unlockedFonts)) state.unlockedFonts = data.unlockedFonts;
-  if (Array.isArray(data.unlockedThemes)) state.unlockedThemes = data.unlockedThemes;
-  if (typeof data.reflectionSaveCount === 'number') state.reflectionSaveCount = data.reflectionSaveCount;
-  if (Array.isArray(data.reflectionLog)) state.reflectionLog = data.reflectionLog;
-  if (typeof data.unseenWins === 'boolean') state.unseenWins = data.unseenWins;
-  if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
-  if (typeof checkAchievements === 'function') checkAchievements(true);
-  if (typeof updateWinsDot === 'function') updateWinsDot();
-}
-
-function applyRecoverySnapshotData(snap) {
-  if (!snap || !snap.email) return;
-  const email = String(snap.email).toLowerCase();
-  if (!state.users) state.users = {};
-  state.users[email] = {
-    username: email,
-    displayName: snap.displayName || email.split('@')[0],
-    avatar: snap.avatar || '🦊',
-    points: snap.points || 0,
-    created: snap.created || todayStr(),
-    privacyAcceptedAt: new Date().toISOString()
-  };
-  if (snap.password) state.users[email].password = snap.password;
-  state.currentUser = email;
-  state.tasks = Array.isArray(snap.tasks) ? snap.tasks : [];
-  state.habits = Array.isArray(snap.habits) ? snap.habits : [];
-  state.notes = Array.isArray(snap.notes) ? snap.notes : [];
-  state.classes = Array.isArray(snap.classes) ? snap.classes : [];
-  state.goals = Array.isArray(snap.goals) ? snap.goals : [];
-  state.reflections = snap.reflections && typeof snap.reflections === 'object' ? snap.reflections : {};
-  state.books = Array.isArray(snap.books) ? snap.books : [];
-  state.inquiries = Array.isArray(snap.inquiries) ? snap.inquiries : [];
-  state.readingBook = snap.readingBook || null;
-  state.topicInquiry = snap.topicInquiry || null;
-  state.timezone = snap.timezone || 'CET';
-  state.adhdMode = !!snap.adhdMode;
-  state.dyslexiaMode = !!snap.dyslexiaMode;
-  state.fontFamily = snap.fontFamily || 'nunito';
-  state.notificationsEnabled = !!snap.notificationsEnabled;
-  state.privacyAccepted = true;
-  state.theme = snap.theme || 'sunshine';
-  if (snap.calVersion) state.calVersion = snap.calVersion;
-  state.unlockedAchievements = Array.isArray(snap.unlockedAchievements) ? snap.unlockedAchievements : [];
-  state.unlockedAvatars = Array.isArray(snap.unlockedAvatars) ? snap.unlockedAvatars : ['🦊'];
-  state.unlockedFonts = Array.isArray(snap.unlockedFonts) ? snap.unlockedFonts : ['nunito', 'poppins', 'opendyslexic'];
-  state.unlockedThemes = Array.isArray(snap.unlockedThemes) ? snap.unlockedThemes : ['sunshine'];
-  state.reflectionSaveCount = snap.reflectionSaveCount || 0;
-  state.reflectionLog = Array.isArray(snap.reflectionLog) ? snap.reflectionLog : [];
-  state.unseenWins = !!snap.unseenWins;
-}
-
 
 
 function register() {
@@ -6299,26 +4750,14 @@ function login() {
     return;
   }
 
-  if (firebaseReady && auth) {
-    // If this device already has a full planner for this email, don't let empty cloud wipe it
-    if (state.users[username] && plannerRichness({ ...state, currentUser: username }) >= 8) {
-      _skipNextCloudLoad = false; // still load, but cloudLoad protects rich local
-    }
+  if (firebaseReady) {
     auth.signInWithEmailAndPassword(username, password)
       .then(async () => {
         state.currentUser = username;
         if (!state.users[username]) {
           state.users[username] = { username, displayName: username.split('@')[0], avatar: '🦊', points: 0 };
         }
-        // Listener also runs; explicit load for reliability
         await cloudLoadUserData();
-        // If still sparse after cloud load, try Adèle pack for that email
-        if (isLocalPlannerSparse() && username === 'adeletrentinella@school-beyond-limitations.com' && typeof buildAdeleRecoverySnapshot === 'function') {
-          applyRecoverySnapshotData(buildAdeleRecoverySnapshot());
-          await cloudSaveUserData(true);
-        } else if (plannerRichness(state) >= 4) {
-          await cloudSaveUserData(false);
-        }
         save();
         enterApp();
         toast('Welcome back! 🌟');
@@ -8012,17 +6451,42 @@ document.querySelectorAll('#avatar-options .avatar').forEach(el => {
   const a = el.dataset.avatar;
   if (a) el.style.background = avatarBg(a);
 });
-const hadLocalSession = !!(state.currentUser && state.users[state.currentUser]);
-if (hadLocalSession) {
-  const authScreen = document.getElementById('auth-screen');
-  const appScreen = document.getElementById('app-screen');
-  authScreen.classList.remove('active');
-  authScreen.style.display = 'none';
-  appScreen.classList.add('active');
-  appScreen.style.display = 'block';
+initFirebaseSafe();
+if (firebaseReady && auth) {
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      state.currentUser = (user.email || '').toLowerCase();
+      if (!state.users[state.currentUser]) {
+        state.users[state.currentUser] = {
+          username: state.currentUser,
+          displayName: user.displayName || state.currentUser.split('@')[0],
+          avatar: '🦊',
+          points: 0
+        };
+      }
+      try { await cloudLoadUserData(); } catch (e) {}
+      save();
+      ensureSchoolCalendar();
+      applyA11yModes();
+      document.getElementById('auth-screen').classList.remove('active');
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-screen').classList.add('active');
+      document.getElementById('app-screen').style.display = 'block';
+      renderAll();
+    }
+  });
+}
+if (state.currentUser && state.users[state.currentUser]) {
+  const auth = document.getElementById('auth-screen');
+  const app = document.getElementById('app-screen');
+  auth.classList.remove('active');
+  auth.style.display = 'none';
+  app.classList.add('active');
+  app.style.display = 'block';
   ensureSchoolCalendar();
   applyA11yModes();
   renderAll();
+  if (firebaseReady && auth.currentUser) cloudSaveUserData();
 } else {
   document.getElementById('auth-screen').classList.add('active');
   document.getElementById('auth-screen').style.display = '';
@@ -8030,21 +6494,6 @@ if (hadLocalSession) {
   document.getElementById('app-screen').style.display = '';
   prefillEmailFields();
 }
-
-// Wait for Firebase, then attach auth listener (fixes blank accounts on other devices)
-try {
-  await initFirebaseSafe();
-  if (hadLocalSession && firebaseReady && auth && auth.currentUser) {
-    // Already signed in to Firebase — merge without wiping rich local
-    try { await cloudLoadUserData(); save(); renderAll(); } catch (e) {}
-  } else if (hadLocalSession && firebaseReady && auth && !auth.currentUser && state.users[state.currentUser]?.password) {
-    // Try silent cloud sign-in to enable sync
-    try {
-      _skipNextCloudLoad = plannerRichness(state) >= 8;
-      await auth.signInWithEmailAndPassword(state.currentUser, state.users[state.currentUser].password);
-    } catch (e) { /* stay local */ }
-  }
-} catch (e) { console.warn('boot firebase', e); }
 })();
 
 </script>
