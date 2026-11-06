@@ -1678,9 +1678,28 @@ body.theme-dark .mentor-banner { background:#2A2A40; }
   color: white;
 }
 .habit-emoji {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
   font-size: 2rem;
-  margin-bottom: 6px;
+  line-height: 1;
+  margin: 0 auto 6px;
+  flex: 0 0 2.6rem;
 }
+#today-habits .habit-emoji {
+  width: 2.6rem;
+  height: 2.6rem;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+  font-size: 2rem;
+  flex: 0 0 2.6rem;
+}
+
 .habit-name {
   font-weight: 700;
   font-size: 0.95rem;
@@ -3895,6 +3914,9 @@ const ACHIEVEMENTS = [
 ACHIEVEMENTS.forEach(a => {
   const originalProgress = a.progress;
   a.progress = () => {
+    // Star achievements must always follow the live star balance. Recovery
+    // overrides are only for historical counters that cannot be reconstructed.
+    if (a.id && a.id.startsWith('stars_')) return originalProgress();
     const overrides = state.recoveryWinProgressOverrides || {};
     return Object.prototype.hasOwnProperty.call(overrides, a.id)
       ? Number(overrides[a.id]) : originalProgress();
@@ -4404,7 +4426,6 @@ function applyRecoveredAccountRecord(rec) {
     streak_7:3, streak_7b:3, streak_14:3,
     library:1, explorer:1, goal_one:0, goal_two:0, goal_three:0,
     reflect_5:2, session_20:10,
-    stars_100:105, stars_150:105, stars_200:97, stars_300:97
   };
   state.unlockedAvatars = ['🦊','🐼','🐶','🦁','🐸','🐰','🦄','🐱','🌟','🐨','🐯','🐵','🐷','🐮','🚀','🌈','🎮','🎨','⚡','🏆','🐢','🐙','🐧','🐬','🐝','🦋'];
   state.unlockedFonts = ['nunito','poppins','opendyslexic','chewy','eduqld'];
