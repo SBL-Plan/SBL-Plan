@@ -2522,7 +2522,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-09b';
+const APP_VERSION = '2026-11-09c';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -4677,57 +4677,159 @@ function isSecureContextForPwa() {
   return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 }
 
-function getSblLogoSrc() {
-  try {
-    return document.querySelector('#auth-screen .logo-img')?.src
-      || document.querySelector('.logo-img')?.src
-      || document.querySelector('#header-logo')?.src
-      || '';
-  } catch (e) { return ''; }
-}
 
-function loadImageFromSrc(src) {
-  return new Promise((resolve, reject) => {
-    if (!src) { reject(new Error('no logo src')); return; }
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('logo load failed'));
-    img.src = src;
-  });
-}
-
-/** App icon = SBL shield logo (not the text “SBL” placeholder) */
+/** Sharp SBL shield icon — drawn vector-style at any size (not upscaled PNG) */
 async function canvasIconDataUrl(size) {
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
-  // Soft cream background matching the app
-  ctx.fillStyle = '#FFF8F0';
-  ctx.fillRect(0, 0, size, size);
-  try {
-    const src = getSblLogoSrc();
-    const img = await loadImageFromSrc(src);
-    // Fit shield inside square with padding
-    const pad = size * 0.08;
-    const maxW = size - pad * 2;
-    const maxH = size - pad * 2;
-    const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-    const w = img.naturalWidth * scale;
-    const h = img.naturalHeight * scale;
-    const x = (size - w) / 2;
-    const y = (size - h) / 2;
-    ctx.drawImage(img, x, y, w, h);
-  } catch (e) {
-    // Last resort if logo image is missing
-    ctx.fillStyle = '#C45C26';
-    ctx.font = 'bold ' + Math.round(size * 0.22) + 'px system-ui,sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('SBL', size / 2, size / 2);
+  // Transparent / cream outside shield
+  ctx.clearRect(0, 0, size, size);
+
+  const s = size;
+  // Shield geometry (pointy bottom, flat-ish top with slight curve)
+  const pad = s * 0.06;
+  const left = pad;
+  const right = s - pad;
+  const top = pad * 1.1;
+  const bottom = s - pad * 0.4;
+  const midX = s / 2;
+  const midY = top + (bottom - top) * 0.48;
+  const topW = (right - left) * 0.92;
+  const topL = midX - topW / 2;
+  const topR = midX + topW / 2;
+
+  function shieldPath() {
+    ctx.beginPath();
+    ctx.moveTo(topL, top + s * 0.04);
+    ctx.lineTo(topR, top + s * 0.04);
+    // top-right shoulder
+    ctx.quadraticCurveTo(right, top + s * 0.04, right, top + s * 0.14);
+    ctx.lineTo(right, midY + (bottom - midY) * 0.15);
+    // right curve down to point
+    ctx.quadraticCurveTo(right, bottom - s * 0.12, midX, bottom);
+    ctx.quadraticCurveTo(left, bottom - s * 0.12, left, midY + (bottom - midY) * 0.15);
+    ctx.lineTo(left, top + s * 0.14);
+    ctx.quadraticCurveTo(left, top + s * 0.04, topL, top + s * 0.04);
+    ctx.closePath();
   }
+
+  // Soft shadow
+  ctx.save();
+  shieldPath();
+  ctx.shadowColor = 'rgba(0,0,0,0.18)';
+  ctx.shadowBlur = s * 0.04;
+  ctx.shadowOffsetY = s * 0.02;
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.restore();
+
+  // Clip to shield and paint 4 quadrants
+  ctx.save();
+  shieldPath();
+  ctx.clip();
+
+  // Colors matching the SBL logo
+  const red = '#E85A4F';
+  const cyan = '#3DB9C9';
+  const yellow = '#F0C93A';
+  const purple = '#6B5B95';
+
+  ctx.fillStyle = red;
+  ctx.fillRect(0, 0, midX, midY);
+  ctx.fillStyle = cyan;
+  ctx.fillRect(midX, 0, s, midY);
+  ctx.fillStyle = yellow;
+  ctx.fillRect(0, midY, midX, s);
+  ctx.fillStyle = purple;
+  ctx.fillRect(midX, midY, s, s);
+
+  // Thin cross lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = Math.max(2, s * 0.012);
+  ctx.beginPath();
+  ctx.moveTo(midX, top);
+  ctx.lineTo(midX, bottom);
+  ctx.moveTo(left, midY);
+  ctx.lineTo(right, midY);
+  ctx.stroke();
+
+  // Icons (white, centered in each quadrant)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const qx = [midX * 0.5, midX + (s - midX) * 0.5, midX * 0.5, midX + (s - midX) * 0.5];
+  const qy = [midY * 0.55, midY * 0.55, midY + (s - midY) * 0.38, midY + (s - midY) * 0.38];
+  const iconR = s * 0.11;
+
+  // Heart (top-left)
+  (function drawHeart(cx, cy, r) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.7);
+    ctx.bezierCurveTo(cx - r * 1.1, cy + r * 0.1, cx - r * 1.05, cy - r * 0.7, cx, cy - r * 0.25);
+    ctx.bezierCurveTo(cx + r * 1.05, cy - r * 0.7, cx + r * 1.1, cy + r * 0.1, cx, cy + r * 0.7);
+    ctx.fill();
+  })(qx[0], qy[0], iconR);
+
+  // Globe (top-right)
+  (function drawGlobe(cx, cy, r) {
+    ctx.lineWidth = Math.max(2, s * 0.014);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * 0.45, r, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - r, cy);
+    ctx.lineTo(cx + r, cy);
+    ctx.stroke();
+  })(qx[1], qy[1], iconR);
+
+  // Lightbulb (bottom-left)
+  (function drawBulb(cx, cy, r) {
+    ctx.beginPath();
+    ctx.arc(cx, cy - r * 0.15, r * 0.7, Math.PI * 0.15, Math.PI * 0.85, true);
+    ctx.lineTo(cx + r * 0.32, cy + r * 0.55);
+    ctx.lineTo(cx - r * 0.32, cy + r * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillRect(cx - r * 0.28, cy + r * 0.55, r * 0.56, r * 0.22);
+    ctx.fillRect(cx - r * 0.2, cy + r * 0.78, r * 0.4, r * 0.14);
+  })(qx[2], qy[2], iconR * 1.05);
+
+  // People (bottom-right)
+  (function drawPeople(cx, cy, r) {
+    // left person
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.55, cy - r * 0.35, r * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.55, cy + r * 0.45, r * 0.45, r * 0.4, 0, Math.PI, 0);
+    ctx.fill();
+    // right person
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.55, cy - r * 0.35, r * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.55, cy + r * 0.45, r * 0.45, r * 0.4, 0, Math.PI, 0);
+    ctx.fill();
+  })(qx[3], qy[3], iconR);
+
+  ctx.restore();
+
+  // Clean outline
+  shieldPath();
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = Math.max(1, s * 0.01);
+  ctx.stroke();
+
   return c.toDataURL('image/png');
 }
+
 
 async function setupPwaInstall() {
   if (window._sblPwaReady) return;
