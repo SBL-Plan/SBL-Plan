@@ -2522,7 +2522,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-09c';
+const APP_VERSION = '2026-11-09d';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -4678,76 +4678,70 @@ function isSecureContextForPwa() {
 }
 
 
-/** Sharp SBL shield icon — drawn vector-style at any size (not upscaled PNG) */
+/** Sharp SBL shield — official layout: heart, arrow, bulb, globe */
 async function canvasIconDataUrl(size) {
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
-  // Transparent / cream outside shield
   ctx.clearRect(0, 0, size, size);
 
   const s = size;
-  // Shield geometry (pointy bottom, flat-ish top with slight curve)
-  const pad = s * 0.06;
+  const pad = s * 0.05;
   const left = pad;
   const right = s - pad;
-  const top = pad * 1.1;
-  const bottom = s - pad * 0.4;
+  const top = pad * 1.15;
+  const bottom = s - pad * 0.35;
   const midX = s / 2;
-  const midY = top + (bottom - top) * 0.48;
-  const topW = (right - left) * 0.92;
-  const topL = midX - topW / 2;
-  const topR = midX + topW / 2;
+  // Horizontal divide slightly above center (matches official logo)
+  const midY = top + (bottom - top) * 0.46;
 
   function shieldPath() {
+    const topInset = s * 0.04;
     ctx.beginPath();
-    ctx.moveTo(topL, top + s * 0.04);
-    ctx.lineTo(topR, top + s * 0.04);
-    // top-right shoulder
-    ctx.quadraticCurveTo(right, top + s * 0.04, right, top + s * 0.14);
-    ctx.lineTo(right, midY + (bottom - midY) * 0.15);
-    // right curve down to point
-    ctx.quadraticCurveTo(right, bottom - s * 0.12, midX, bottom);
-    ctx.quadraticCurveTo(left, bottom - s * 0.12, left, midY + (bottom - midY) * 0.15);
-    ctx.lineTo(left, top + s * 0.14);
-    ctx.quadraticCurveTo(left, top + s * 0.04, topL, top + s * 0.04);
+    ctx.moveTo(left + topInset, top);
+    ctx.lineTo(right - topInset, top);
+    ctx.quadraticCurveTo(right, top, right, top + s * 0.08);
+    ctx.lineTo(right, midY + (bottom - midY) * 0.2);
+    ctx.quadraticCurveTo(right * 0.98, bottom - s * 0.08, midX, bottom);
+    ctx.quadraticCurveTo(left * 1.02 + pad * 0.2, bottom - s * 0.08, left, midY + (bottom - midY) * 0.2);
+    ctx.lineTo(left, top + s * 0.08);
+    ctx.quadraticCurveTo(left, top, left + topInset, top);
     ctx.closePath();
   }
 
-  // Soft shadow
+  // Shadow
   ctx.save();
   shieldPath();
-  ctx.shadowColor = 'rgba(0,0,0,0.18)';
-  ctx.shadowBlur = s * 0.04;
-  ctx.shadowOffsetY = s * 0.02;
-  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.16)';
+  ctx.shadowBlur = s * 0.035;
+  ctx.shadowOffsetY = s * 0.015;
+  ctx.fillStyle = '#ffffff';
   ctx.fill();
   ctx.restore();
 
-  // Clip to shield and paint 4 quadrants
   ctx.save();
   shieldPath();
   ctx.clip();
 
-  // Colors matching the SBL logo
-  const red = '#E85A4F';
-  const cyan = '#3DB9C9';
-  const yellow = '#F0C93A';
-  const purple = '#6B5B95';
+  // Official-ish quadrant colors
+  const red = '#E23D2A';      // heart
+  const blue = '#5BB8E8';     // arrow
+  const yellow = '#E8C84A';   // bulb
+  const green = '#8FBF3F';    // globe
 
   ctx.fillStyle = red;
-  ctx.fillRect(0, 0, midX, midY);
-  ctx.fillStyle = cyan;
-  ctx.fillRect(midX, 0, s, midY);
+  ctx.fillRect(0, 0, midX + 1, midY + 1);
+  ctx.fillStyle = blue;
+  ctx.fillRect(midX - 1, 0, s, midY + 1);
   ctx.fillStyle = yellow;
-  ctx.fillRect(0, midY, midX, s);
-  ctx.fillStyle = purple;
-  ctx.fillRect(midX, midY, s, s);
+  ctx.fillRect(0, midY - 1, midX + 1, s);
+  ctx.fillStyle = green;
+  ctx.fillRect(midX - 1, midY - 1, s, s);
 
-  // Thin cross lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-  ctx.lineWidth = Math.max(2, s * 0.012);
+  // Subtle white cross
+  ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+  ctx.lineWidth = Math.max(2, s * 0.011);
   ctx.beginPath();
   ctx.moveTo(midX, top);
   ctx.lineTo(midX, bottom);
@@ -4755,80 +4749,90 @@ async function canvasIconDataUrl(size) {
   ctx.lineTo(right, midY);
   ctx.stroke();
 
-  // Icons (white, centered in each quadrant)
   ctx.fillStyle = '#FFFFFF';
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  const qx = [midX * 0.5, midX + (s - midX) * 0.5, midX * 0.5, midX + (s - midX) * 0.5];
-  const qy = [midY * 0.55, midY * 0.55, midY + (s - midY) * 0.38, midY + (s - midY) * 0.38];
-  const iconR = s * 0.11;
+  // Quadrant centers
+  const cx1 = midX * 0.5;
+  const cy1 = top + (midY - top) * 0.55;
+  const cx2 = midX + (s - midX) * 0.5;
+  const cy2 = top + (midY - top) * 0.55;
+  const cx3 = midX * 0.5;
+  const cy3 = midY + (bottom - midY) * 0.42;
+  const cx4 = midX + (s - midX) * 0.5;
+  const cy4 = midY + (bottom - midY) * 0.42;
+  const r = s * 0.115;
 
   // Heart (top-left)
-  (function drawHeart(cx, cy, r) {
+  (function (cx, cy, rr) {
     ctx.beginPath();
-    ctx.moveTo(cx, cy + r * 0.7);
-    ctx.bezierCurveTo(cx - r * 1.1, cy + r * 0.1, cx - r * 1.05, cy - r * 0.7, cx, cy - r * 0.25);
-    ctx.bezierCurveTo(cx + r * 1.05, cy - r * 0.7, cx + r * 1.1, cy + r * 0.1, cx, cy + r * 0.7);
+    ctx.moveTo(cx, cy + rr * 0.75);
+    ctx.bezierCurveTo(cx - rr * 1.15, cy + rr * 0.05, cx - rr * 1.1, cy - rr * 0.75, cx, cy - rr * 0.28);
+    ctx.bezierCurveTo(cx + rr * 1.1, cy - rr * 0.75, cx + rr * 1.15, cy + rr * 0.05, cx, cy + rr * 0.75);
     ctx.fill();
-  })(qx[0], qy[0], iconR);
+  })(cx1, cy1, r);
 
-  // Globe (top-right)
-  (function drawGlobe(cx, cy, r) {
-    ctx.lineWidth = Math.max(2, s * 0.014);
+  // Arrow up-right (top-right) — official logo
+  (function (cx, cy, rr) {
+    const lw = Math.max(3, s * 0.028);
+    ctx.lineWidth = lw;
+    // shaft
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.moveTo(cx - rr * 0.7, cy + rr * 0.7);
+    ctx.lineTo(cx + rr * 0.55, cy - rr * 0.55);
     ctx.stroke();
+    // arrow head
     ctx.beginPath();
-    ctx.ellipse(cx, cy, r * 0.45, r, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - r, cy);
-    ctx.lineTo(cx + r, cy);
-    ctx.stroke();
-  })(qx[1], qy[1], iconR);
-
-  // Lightbulb (bottom-left)
-  (function drawBulb(cx, cy, r) {
-    ctx.beginPath();
-    ctx.arc(cx, cy - r * 0.15, r * 0.7, Math.PI * 0.15, Math.PI * 0.85, true);
-    ctx.lineTo(cx + r * 0.32, cy + r * 0.55);
-    ctx.lineTo(cx - r * 0.32, cy + r * 0.55);
+    ctx.moveTo(cx + rr * 0.05, cy - rr * 0.75);
+    ctx.lineTo(cx + rr * 0.75, cy - rr * 0.75);
+    ctx.lineTo(cx + rr * 0.75, cy - rr * 0.05);
     ctx.closePath();
     ctx.fill();
-    ctx.fillRect(cx - r * 0.28, cy + r * 0.55, r * 0.56, r * 0.22);
-    ctx.fillRect(cx - r * 0.2, cy + r * 0.78, r * 0.4, r * 0.14);
-  })(qx[2], qy[2], iconR * 1.05);
+  })(cx2, cy2, r * 1.05);
 
-  // People (bottom-right)
-  (function drawPeople(cx, cy, r) {
-    // left person
+  // Lightbulb (bottom-left)
+  (function (cx, cy, rr) {
     ctx.beginPath();
-    ctx.arc(cx - r * 0.55, cy - r * 0.35, r * 0.32, 0, Math.PI * 2);
+    ctx.arc(cx, cy - rr * 0.12, rr * 0.72, Math.PI * 0.12, Math.PI * 0.88, true);
+    ctx.lineTo(cx + rr * 0.34, cy + rr * 0.58);
+    ctx.lineTo(cx - rr * 0.34, cy + rr * 0.58);
+    ctx.closePath();
     ctx.fill();
+    // base rings
+    ctx.fillRect(cx - rr * 0.3, cy + rr * 0.58, rr * 0.6, rr * 0.18);
+    ctx.fillRect(cx - rr * 0.22, cy + rr * 0.78, rr * 0.44, rr * 0.14);
+  })(cx3, cy3, r * 1.05);
+
+  // Globe (bottom-right)
+  (function (cx, cy, rr) {
+    ctx.lineWidth = Math.max(2.5, s * 0.016);
     ctx.beginPath();
-    ctx.ellipse(cx - r * 0.55, cy + r * 0.45, r * 0.45, r * 0.4, 0, Math.PI, 0);
-    ctx.fill();
-    // right person
+    ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+    ctx.stroke();
+    // meridian
     ctx.beginPath();
-    ctx.arc(cx + r * 0.55, cy - r * 0.35, r * 0.32, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.ellipse(cx, cy, rr * 0.42, rr, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    // equator
     ctx.beginPath();
-    ctx.ellipse(cx + r * 0.55, cy + r * 0.45, r * 0.45, r * 0.4, 0, Math.PI, 0);
-    ctx.fill();
-  })(qx[3], qy[3], iconR);
+    ctx.moveTo(cx - rr, cy);
+    ctx.lineTo(cx + rr, cy);
+    ctx.stroke();
+  })(cx4, cy4, r * 0.95);
 
   ctx.restore();
 
-  // Clean outline
+  // Crisp outline
   shieldPath();
-  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-  ctx.lineWidth = Math.max(1, s * 0.01);
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = Math.max(1, s * 0.008);
   ctx.stroke();
 
   return c.toDataURL('image/png');
 }
+
 
 
 async function setupPwaInstall() {
