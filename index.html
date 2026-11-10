@@ -2522,7 +2522,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-09f';
+const APP_VERSION = '2026-11-10a';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -2861,7 +2861,8 @@ let state = {
   unlockedThemes: ['sunshine'],
   reflectionSaveCount: 0,
   unseenWins: false,
-  lastActive: null
+  lastActive: null,
+  sessionCheckCount: 0
 };
 
 // ---------- Helpers ----------
@@ -2915,18 +2916,25 @@ function toggleSessionDone(id, dateStr) {
   if (c.history[t]) {
     if (!confirm('Uncheck this session for today?')) return;
     delete c.history[t];
+    if (typeof state.sessionCheckCount === 'number' && state.sessionCheckCount > 0) {
+      state.sessionCheckCount -= 1;
+    }
     addPoints(-4);
     toast('Session unchecked');
   } else {
     c.history[t] = true;
+    state.sessionCheckCount = (typeof state.sessionCheckCount === 'number' ? state.sessionCheckCount : 0) + 1;
     addPoints(4);
     showConfetti();
     toast('+4 stars for session! 🎨');
   }
   save();
+  if (typeof checkAchievements === 'function') checkAchievements();
   renderToday();
   renderClasses();
   renderWeek();
+  if (typeof renderAchievementsTab === 'function') renderAchievementsTab(true);
+  if (typeof updateWinsDot === 'function') updateWinsDot();
 }
 
 function renderGoals() {
@@ -3691,6 +3699,7 @@ function load() {
       if (!state.habits) state.habits = [];
       if (!state.notes) state.notes = [];
       if (!state.classes) state.classes = [];
+      if (typeof state.sessionCheckCount !== 'number') state.sessionCheckCount = 0;
       if (!state.fontFamily) state.fontFamily = state.dyslexiaMode ? 'opendyslexic' : 'nunito';
       if (!state.theme) state.theme = 'sunshine';
 if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
@@ -4180,9 +4189,25 @@ function countReflections() {
   return state.reflectionSaveCount || 0;
 }
 function countSessionChecks() {
-  let n = 0;
-  (state.classes || []).forEach(c => { if (c && c.history) Object.keys(c.history).forEach(k => { if (c.history[k]) n++; }); });
-  return n;
+  let fromHistory = 0;
+  (state.classes || []).forEach(c => {
+    if (c && c.history) {
+      Object.keys(c.history).forEach(k => { if (c.history[k]) fromHistory++; });
+    }
+  });
+  const stored = (typeof state.sessionCheckCount === 'number') ? state.sessionCheckCount : 0;
+  // If a higher session win was already unlocked, never show progress below that tier
+  let minFromUnlocks = 0;
+  const unlocked = state.unlockedAchievements || [];
+  if (unlocked.includes('session_20')) minFromUnlocks = 20;
+  else if (unlocked.includes('session_10')) minFromUnlocks = 10;
+  else if (unlocked.includes('session_5')) minFromUnlocks = 5;
+  const total = Math.max(fromHistory, stored, minFromUnlocks);
+  // Keep stored counter in sync so progress keeps growing when checking more
+  if (typeof state.sessionCheckCount !== 'number' || state.sessionCheckCount < total) {
+    state.sessionCheckCount = total;
+  }
+  return total;
 }
 function isAvatarUnlocked(a) {
   ensureUnlockDefaults();
@@ -5013,6 +5038,7 @@ async function cloudSaveUserData(force) {
     reflectionSaveCount: state.reflectionSaveCount || 0,
     reflectionLog: state.reflectionLog || [],
     unseenWins: !!state.unseenWins,
+    sessionCheckCount: state.sessionCheckCount || 0,
     updatedAt: new Date().toISOString(),
     richness: plannerRichness(state)
   };
@@ -5117,6 +5143,9 @@ function applyCloudDocToState(data, email) {
   if (typeof data.reflectionSaveCount === 'number') state.reflectionSaveCount = data.reflectionSaveCount;
   if (Array.isArray(data.reflectionLog)) state.reflectionLog = data.reflectionLog;
   if (typeof data.unseenWins === 'boolean') state.unseenWins = data.unseenWins;
+  if (typeof data.sessionCheckCount === 'number') {
+    state.sessionCheckCount = Math.max(state.sessionCheckCount || 0, data.sessionCheckCount);
+  }
   if (typeof ensureUnlockDefaults === 'function') ensureUnlockDefaults();
   if (typeof checkAchievements === 'function') checkAchievements(true);
   if (typeof updateWinsDot === 'function') updateWinsDot();
