@@ -2402,6 +2402,10 @@ body.theme-highcontrast .nav-btn.active {
         <h3 class="goal-term-title long">🌟 Long term</h3>
         <div id="goals-long" class="card-list"></div>
         <button class="btn add-btn" style="background:#A78BFA;margin-bottom:18px" onclick="openGoalModal('long')">+ Long-term goal</button>
+
+        <h3 class="goal-term-title" style="color:var(--success-2);margin-top:8px">🏆 Accomplished goals</h3>
+        <p class="hint">Checked-off goals live here</p>
+        <div id="goals-done" class="card-list"></div>
       </section>
 
       <!-- REFLECT -->
@@ -2488,7 +2492,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-25c';
+const APP_VERSION = '2026-11-26a';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -2904,41 +2908,55 @@ function toggleSessionDone(id, dateStr) {
   if (typeof updateWinsDot === 'function') updateWinsDot();
 }
 
+function goalCardHTML(g, inDonePocket) {
+  const howLines = (g.how || '').trim().split('\n').map(s => s.trim()).filter(Boolean);
+  const why = (g.why || '').trim();
+  const howHtml = howLines.length
+    ? `<div class="card-meta" style="margin-top:6px"><strong>How:</strong></div>
+       <ul style="margin:4px 0 0 18px;padding:0;color:var(--muted);font-size:0.88rem;line-height:1.4">
+         ${howLines.map(s => `<li>${String(s).replace(/</g,'&lt;')}</li>`).join('')}
+       </ul>` : '';
+  const whyHtml = why ? `<div class="card-meta" style="margin-top:6px"><strong>Why:</strong> ${String(why).replace(/</g,'&lt;')}</div>` : '';
+  const termLabel = { short: 'Short', medium: 'Medium', long: 'Long' }[g.term || 'short'] || '';
+  return `
+  <div class="goal-card ${g.done ? 'done' : ''}">
+    <div class="checkbox ${g.done ? 'checked' : ''}" onclick="toggleGoal('${g.id}')">${g.done ? '✓' : ''}</div>
+    <div style="flex:1">
+      <div class="goal-text card-title">${String(g.text || '').replace(/</g,'&lt;')}</div>
+      ${inDonePocket && termLabel ? `<div class="card-meta">${termLabel}-term</div>` : ''}
+      ${g.byWhen ? `<div class="card-meta">By ${formatShort(g.byWhen)}</div>` : ''}
+      ${g.doneAt ? `<div class="card-meta">Done ${formatShort(g.doneAt)}</div>` : ''}
+      ${whyHtml}${howHtml}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="small-btn" onclick="openGoalModal('${g.term || 'short'}', '${g.id}')">Edit</button>
+      <button class="small-btn danger" onclick="deleteGoal('${g.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+
 function renderGoals() {
   if (!state.goals) state.goals = [];
   state.goals.forEach(g => { if (!g.term) g.term = 'short'; });
   ['short', 'medium', 'long'].forEach(term => {
     const list = document.getElementById('goals-' + term);
     if (!list) return;
-        const items = state.goals.filter(g => (g.term || 'short') === term);
+    const items = state.goals.filter(g => !g.done && (g.term || 'short') === term);
     if (items.length === 0) {
       list.innerHTML = `<div class="empty" style="padding:10px;font-size:0.9rem">No ${term}-term goals yet</div>`;
       return;
     }
-    list.innerHTML = items.map(g => {
-      const howLines = (g.how || '').trim().split('\n').map(s => s.trim()).filter(Boolean);
-      const why = (g.why || '').trim();
-      const howHtml = howLines.length
-        ? `<div class="card-meta" style="margin-top:6px"><strong>How:</strong></div>
-           <ul style="margin:4px 0 0 18px;padding:0;color:var(--muted);font-size:0.88rem;line-height:1.4">
-             ${howLines.map(s => `<li>${String(s).replace(/</g,'&lt;')}</li>`).join('')}
-           </ul>` : '';
-      const whyHtml = why ? `<div class="card-meta" style="margin-top:6px"><strong>Why:</strong> ${String(why).replace(/</g,'&lt;')}</div>` : '';
-      return `
-      <div class="goal-card ${g.done ? 'done' : ''}">
-        <div class="checkbox ${g.done ? 'checked' : ''}" onclick="toggleGoal('${g.id}')">${g.done ? '✓' : ''}</div>
-        <div style="flex:1">
-          <div class="goal-text card-title">${String(g.text || '').replace(/</g,'&lt;')}</div>
-          ${g.byWhen ? `<div class="card-meta">By ${formatShort(g.byWhen)}</div>` : ''}
-          ${whyHtml}${howHtml}
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <button class="small-btn" onclick="openGoalModal('${g.term || 'short'}', '${g.id}')">Edit</button>
-          <button class="small-btn danger" onclick="deleteGoal('${g.id}')">Delete</button>
-        </div>
-      </div>`;
-    }).join('');
+    list.innerHTML = items.map(g => goalCardHTML(g, false)).join('');
   });
+  const doneList = document.getElementById('goals-done');
+  if (doneList) {
+    const done = state.goals.filter(g => g.done).slice().sort((a, b) => String(b.doneAt || '').localeCompare(String(a.doneAt || '')));
+    if (done.length === 0) {
+      doneList.innerHTML = `<div class="empty" style="padding:10px;font-size:0.9rem">Nothing accomplished yet — check off a goal!</div>`;
+    } else {
+      doneList.innerHTML = done.map(g => goalCardHTML(g, true)).join('');
+    }
+  }
 }
 
 function openGoalModal(term, editId = null) {
@@ -2987,18 +3005,21 @@ function toggleGoal(id) {
   const g = state.goals.find(x => x.id === id);
   if (!g) return;
   if (g.done) {
-    if (!confirm('Uncheck this goal?')) return;
+    if (!confirm('Move this goal back to active?')) return;
     g.done = false;
+    delete g.doneAt;
     addPoints(-10);
-    toast('Goal unchecked');
+    toast('Goal moved back to active');
   } else {
     g.done = true;
+    g.doneAt = todayStr();
     addPoints(10);
     showConfetti();
-    toast('+10 stars — goal reached! 🏆');
+    toast('+10 stars — moved to Accomplished! 🏆');
   }
   save();
   renderGoals();
+  if (typeof checkAchievements === 'function') checkAchievements();
 }
 
 function deleteGoal(id) {
@@ -4114,32 +4135,34 @@ const ACHIEVEMENTS = [
   { id: 'streak_7', title: 'Ember starter', emoji: '🔥', desc: 'Get a 7-day habit streak', progress: () => Math.min(7, bestHabitStreak()), target: 7, reward: { type: 'theme', value: 'ember', label: 'Ember theme' } },
   { id: 'streak_7b', title: 'Dino pack', emoji: '🦖', desc: 'Get a 10-day habit streak', progress: () => Math.min(10, bestHabitStreak()), target: 10, reward: { type: 'avatars', value: ['🦖','🦕','🐲'], label: 'Dino avatars' } },
   { id: 'ten_steps', title: 'Midnight owl', emoji: '🌙', desc: 'Complete 50 action steps', progress: () => Math.min(50, countDoneTasks()), target: 50, reward: { type: 'theme', value: 'midnight', label: 'Midnight theme' } },
-  { id: 'goal_one', title: 'Coffee break', emoji: '☕', desc: 'Complete 2 goals', progress: () => Math.min(2, countDoneGoals()), target: 2, reward: { type: 'theme', value: 'coffee', label: 'Coffee theme' } },
-  { id: 'color_sky', title: 'Sky blues', emoji: '💙', desc: 'Complete 3 goals', progress: () => Math.min(3, countDoneGoals()), target: 3, reward: { type: 'avatarBgs', value: ['sky','blue','slate'], label: 'Sky + Blue + Slate colors' } },
+  { id: 'goal_one', title: 'Coffee break', emoji: '☕', desc: 'Complete 1 goal', progress: () => Math.min(1, countDoneGoals()), target: 1, reward: { type: 'theme', value: 'coffee', label: 'Coffee theme' } },
+  { id: 'goal_two', title: 'Mint fresh', emoji: '🍃', desc: 'Complete 2 goals', progress: () => Math.min(2, countDoneGoals()), target: 2, reward: { type: 'theme', value: 'mint', label: 'Mint theme' } },
+  { id: 'goal_three', title: 'Ocean waves', emoji: '🌊', desc: 'Complete 3 goals', progress: () => Math.min(3, countDoneGoals()), target: 3, reward: { type: 'theme', value: 'ocean', label: 'Ocean theme' } },
+  { id: 'color_sky', title: 'Sky blues', emoji: '💙', desc: 'Get a 12-day habit streak', progress: () => Math.min(12, bestHabitStreak()), target: 12, reward: { type: 'avatarBgs', value: ['sky','blue','slate'], label: 'Sky + Blue + Slate colors' } },
   { id: 'reflect_2', title: 'Aurora watcher', emoji: '🌌', desc: 'Write 5 reflections', progress: () => Math.min(5, countReflections()), target: 5, reward: { type: 'theme', value: 'aurora', label: 'Aurora theme' } },
   { id: 'library', title: 'Little library', emoji: '📚', desc: 'Finish 5 book reviews', progress: () => Math.min(5, countBookReviews()), target: 5, reward: { type: 'avatars', value: ['🌸','🍀','🎯','🧩','🎈'], label: 'Nature avatars' } },
   { id: 'explorer', title: 'Explorer', emoji: '🗺️', desc: 'Finish 5 inquiry reviews', progress: () => Math.min(5, countInquiryReviews()), target: 5, reward: { type: 'theme', value: 'sky', label: 'Sky theme' } },
   { id: 'session_20', title: 'Class champion', emoji: '🎓', desc: 'Check off 40 sessions', progress: () => Math.min(40, countSessionChecks()), target: 40, reward: { type: 'avatars', value: ['🐨','🐯','🐵','🐷','🐮'], label: 'Wild avatars' } },
-  { id: 'goal_two', title: 'Mint fresh', emoji: '🍃', desc: 'Complete 5 goals', progress: () => Math.min(5, countDoneGoals()), target: 5, reward: { type: 'theme', value: 'mint', label: 'Mint theme' } },
   { id: 'color_purple', title: 'Purple rain', emoji: '💜', desc: 'Earn 40 stars', progress: () => Math.min(40, currentPoints()), target: 40, reward: { type: 'avatarBgs', value: ['lilac','purple','violet'], label: 'Purple color pack' } },
   { id: 'stars_50', title: 'Star collector', emoji: '⭐', desc: 'Earn 50 stars', progress: () => Math.min(50, currentPoints()), target: 50, reward: { type: 'avatar', value: '🌟', label: 'Star avatar' } },
   { id: 'color_gold', title: 'Golden touch', emoji: '✨', desc: 'Earn 75 stars', progress: () => Math.min(75, currentPoints()), target: 75, reward: { type: 'avatarBgs', value: ['gold','orange','tan'], label: 'Gold + Orange + Tan colors' } },
   { id: 'stars_100', title: 'Fun pack', emoji: '🎮', desc: 'Earn 100 stars', progress: () => Math.min(100, currentPoints()), target: 100, reward: { type: 'avatars', value: ['🚀','🌈','🎮','🎨','⚡','🏆'], label: 'Fun avatars' } },
   { id: 'panda_unlock', title: 'Panda friend', emoji: '🐼', desc: 'Complete 8 action steps', progress: () => Math.min(8, countDoneTasks()), target: 8, reward: { type: 'avatar', value: '🐼', label: 'Panda avatar' } },
 
-  // --- Mid tier ---
+  // --- Mid tier (longer habit streaks) ---
   { id: 'streak_14', title: 'Forest ranger', emoji: '🌲', desc: 'Get a 14-day habit streak', progress: () => Math.min(14, bestHabitStreak()), target: 14, reward: { type: 'theme', value: 'forest', label: 'Forest theme' } },
-  { id: 'goal_three', title: 'Ocean waves', emoji: '🌊', desc: 'Complete 8 goals', progress: () => Math.min(8, countDoneGoals()), target: 8, reward: { type: 'theme', value: 'ocean', label: 'Ocean theme' } },
-  { id: 'reflect_5', title: 'Peachy keen', emoji: '🍑', desc: 'Write 12 reflections', progress: () => Math.min(12, countReflections()), target: 12, reward: { type: 'theme', value: 'peach', label: 'Peach theme' } },
-  { id: 'twenty_steps', title: 'Zesty lemon', emoji: '🍋', desc: 'Complete 100 action steps', progress: () => Math.min(100, countDoneTasks()), target: 100, reward: { type: 'theme', value: 'lemon', label: 'Lemon theme' } },
-  { id: 'stars_200', title: 'Grape crush', emoji: '🍇', desc: 'Earn 200 stars', progress: () => Math.min(200, currentPoints()), target: 200, reward: { type: 'theme', value: 'grape', label: 'Grape theme' } },
+  { id: 'streak_21', title: 'Three-week legend', emoji: '🏅', desc: 'Get a 21-day habit streak', progress: () => Math.min(21, bestHabitStreak()), target: 21, reward: { type: 'theme', value: 'lemon', label: 'Lemon theme' } },
+  { id: 'streak_30', title: 'Month master', emoji: '👑', desc: 'Get a 30-day habit streak', progress: () => Math.min(30, bestHabitStreak()), target: 30, reward: { type: 'theme', value: 'peach', label: 'Peach theme' } },
+  { id: 'reflect_5', title: 'Deep thinker', emoji: '🧠', desc: 'Write 12 reflections', progress: () => Math.min(12, countReflections()), target: 12, reward: { type: 'theme', value: 'grape', label: 'Grape theme' } },
+  { id: 'twenty_steps', title: 'Action legend', emoji: '💪', desc: 'Complete 100 action steps', progress: () => Math.min(100, countDoneTasks()), target: 100, reward: { type: 'theme', value: 'sunset', label: 'Sunset theme' } },
+  { id: 'stars_200', title: 'Berry start', emoji: '🫐', desc: 'Earn 200 stars', progress: () => Math.min(200, currentPoints()), target: 200, reward: { type: 'theme', value: 'berry', label: 'Berry theme' } },
 
   // --- Hardest = brightest / nicest themes ---
-  { id: 'stars_350', title: 'Sunset glow', emoji: '🌅', desc: 'Earn 350 stars', progress: () => Math.min(350, currentPoints()), target: 350, reward: { type: 'theme', value: 'sunset', label: 'Sunset theme' } },
-  { id: 'stars_500', title: 'Lavender dream', emoji: '💜', desc: 'Earn 500 stars', progress: () => Math.min(500, currentPoints()), target: 500, reward: { type: 'theme', value: 'lavender', label: 'Lavender theme' } },
-  { id: 'stars_650', title: 'Rose garden', emoji: '🌹', desc: 'Earn 650 stars', progress: () => Math.min(650, currentPoints()), target: 650, reward: { type: 'theme', value: 'rose', label: 'Rose theme' } },
-  { id: 'stars_800', title: 'Berry blast', emoji: '🫐', desc: 'Earn 800 stars', progress: () => Math.min(800, currentPoints()), target: 800, reward: { type: 'theme', value: 'berry', label: 'Berry theme' } },
-  { id: 'stars_1000', title: 'Candy ultimate', emoji: '🍬', desc: 'Earn 1000 stars', progress: () => Math.min(1000, currentPoints()), target: 1000, reward: { type: 'theme', value: 'candy', label: 'Candy theme' } }
+  { id: 'stars_350', title: 'Sunset glow', emoji: '🌅', desc: 'Earn 350 stars', progress: () => Math.min(350, currentPoints()), target: 350, reward: { type: 'theme', value: 'lavender', label: 'Lavender theme' } },
+  { id: 'stars_500', title: 'Lavender dream', emoji: '💜', desc: 'Earn 500 stars', progress: () => Math.min(500, currentPoints()), target: 500, reward: { type: 'theme', value: 'rose', label: 'Rose theme' } },
+  { id: 'streak_45', title: 'Streak champion', emoji: '🔥', desc: 'Get a 45-day habit streak', progress: () => Math.min(45, bestHabitStreak()), target: 45, reward: { type: 'theme', value: 'candy', label: 'Candy theme' } },
+  { id: 'stars_800', title: 'Superstar', emoji: '✨', desc: 'Earn 800 stars', progress: () => Math.min(800, currentPoints()), target: 800, reward: { type: 'avatars', value: ['🏆'], label: 'Trophy avatar' } },
+  { id: 'stars_1000', title: 'Ultimate', emoji: '👑', desc: 'Earn 1000 stars', progress: () => Math.min(1000, currentPoints()), target: 1000, reward: { type: 'avatarBgs', value: ['gold'], label: 'Gold color (legend)' } }
 ];
 
 function ensureUnlockDefaults() {
@@ -4239,8 +4262,54 @@ function updateWinsDot() {
   const dot = document.getElementById('wins-dot');
   if (dot) dot.classList.toggle('on', !!state.unseenWins);
 }
+/** Rebuild unlocks from real progress only — drops old easy unlocks you didn't earn under current rules */
+function rebuildUnlocksFromProgress() {
+  ensureUnlockDefaults();
+  const earnedIds = [];
+  ACHIEVEMENTS.forEach(a => {
+    let p = 0;
+    try { p = a.progress(); } catch (e) { p = 0; }
+    if (p >= a.target) earnedIds.push(a.id);
+  });
+  state.unlockedAchievements = earnedIds.slice();
+  state.unlockedAvatars = FREE_AVATARS.slice();
+  state.unlockedAvatarBgs = FREE_AVATAR_BGS.slice();
+  state.unlockedFonts = FREE_FONTS.slice();
+  state.unlockedThemes = FREE_THEMES.slice();
+  earnedIds.forEach(id => {
+    const a = ACHIEVEMENTS.find(x => x.id === id);
+    if (a && a.reward) applyAchievementReward(a.reward);
+  });
+  // If current avatar/theme/font is no longer unlocked, fall back to free defaults
+  const user = state.users && state.currentUser ? state.users[state.currentUser] : null;
+  if (user) {
+    if (user.avatar && !state.unlockedAvatars.includes(user.avatar)) {
+      user.avatar = state.unlockedAvatars[0] || '🦊';
+    }
+    if (user.avatarBg && !state.unlockedAvatarBgs.includes(user.avatarBg)) {
+      user.avatarBg = 'gray';
+    }
+  }
+  if (state.theme && !state.unlockedThemes.includes(state.theme)) {
+    state.theme = FREE_THEMES[0] || 'sunshine';
+    try {
+      document.body.className = document.body.className.replace(/theme-\w+/g, '').trim();
+      document.body.classList.add('theme-' + state.theme);
+    } catch (e) {}
+  }
+  if (state.fontFamily && !state.unlockedFonts.includes(state.fontFamily)) {
+    state.fontFamily = FREE_FONTS[0] || 'nunito';
+  }
+  state.unlocksResyncedAt = APP_VERSION;
+}
+
 function checkAchievements(silent) {
   ensureUnlockDefaults();
+  // One-time (per app version) resync so old easy unlocks get re-locked
+  if (state.unlocksResyncedAt !== APP_VERSION) {
+    rebuildUnlocksFromProgress();
+    save();
+  }
   const newly = [];
   ACHIEVEMENTS.forEach(a => {
     if (state.unlockedAchievements.includes(a.id)) return;
@@ -5186,6 +5255,10 @@ function register() {
     toast('A parent or guardian must allow you to use this app');
     return;
   }
+  if (state.users[username] && (state.users[username].points > 0 || (state.users[username].password && state.users[username].created))) {
+    toast('That email already has an account on this device — use Log in or Forgot password');
+    return;
+  }
   if (!firebaseReady && state.users[username]) {
     toast('That username is taken 😅');
     return;
@@ -5259,6 +5332,18 @@ function login() {
     return;
   }
 
+  function enterWithLocalUser(username, password) {
+  const user = state.users[username];
+  if (!user || user.password !== password) return false;
+  state.currentUser = username;
+  // Keep stored password in sync for offline use
+  user.password = password;
+  save();
+  enterApp();
+  toast(`Welcome back ${user.displayName || 'friend'}! 🌟`);
+  return true;
+}
+
   if (firebaseReady && auth) {
     // If this device already has a full planner for this email, don't let empty cloud wipe it
     if (state.users[username] && plannerRichness({ ...state, currentUser: username }) >= 8) {
@@ -5270,6 +5355,8 @@ function login() {
         if (!state.users[username]) {
           state.users[username] = { username, displayName: username.split('@')[0], avatar: '🦊', points: 0 };
         }
+        // Remember password locally so offline / fallback login works
+        state.users[username].password = password;
         // Listener also runs; explicit load for reliability
         await cloudLoadUserData();
         if (plannerRichness(state) >= 4) {
@@ -5279,19 +5366,21 @@ function login() {
         enterApp();
         toast('Welcome back! 🌟');
       })
-      .catch(() => toast('Wrong name or password 🙈'));
+      .catch((err) => {
+        // Cloud rejected — try local account on this device so progress isn't locked out
+        if (enterWithLocalUser(username, password)) {
+          toast('Signed in on this device (cloud password may differ). Your local progress is safe.');
+          return;
+        }
+        console.warn('login failed', err && err.code, err);
+        toast('Wrong name or password 🙈 — try Forgot password?');
+      });
     return;
   }
 
-  const user = state.users[username];
-  if (!user || user.password !== password) {
+  if (!enterWithLocalUser(username, password)) {
     toast('Wrong name or password 🙈');
-    return;
   }
-  state.currentUser = username;
-  save();
-  enterApp();
-  toast(`Welcome back ${user.displayName}! 🌟`);
 }
 
 function ensureSchoolCalendar() {
