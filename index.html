@@ -2492,7 +2492,7 @@ body.theme-highcontrast .nav-btn.active {
   <script>
 
 // ========== SBL Plan App ==========
-const APP_VERSION = '2026-11-26a';
+const APP_VERSION = '2026-11-26b';
 const STORAGE_KEY = 'sbl_plan_data_v1';
 
 /* Firebase optional — leave empty for this-device accounts */
@@ -5065,13 +5065,13 @@ async function deleteMyAccount() {
 
 function logoutUser() {
   try { localStorage.removeItem('sbl_active_session_v1'); } catch (e) {}
-if (firebaseReady && auth) auth.signOut();
+  try { if (firebaseReady && auth) auth.signOut(); } catch (e) {}
   state.currentUser = null;
-    save();
+  save();
   closeModal();
   document.getElementById('app-screen').classList.remove('active');
   document.getElementById('app-screen').style.display = 'none';
-document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('auth-screen').classList.add('active');
   document.getElementById('auth-screen').style.display = '';
   showLogin();
   toast('Logged out');
@@ -5439,19 +5439,31 @@ function ensureSchoolCalendar() {
 }
 
 function enterApp() {
-// Force hide login – never show it again while logged in
-  const auth = document.getElementById('auth-screen');
+  // Force hide login – never show it again while logged in
+  const authScreen = document.getElementById('auth-screen');
   const app = document.getElementById('app-screen');
-  auth.classList.remove('active');
-  auth.style.display = 'none';
-  app.classList.add('active');
-  app.style.display = 'block';
+  if (authScreen) {
+    authScreen.classList.remove('active');
+    authScreen.style.display = 'none';
+  }
+  if (app) {
+    app.classList.add('active');
+    app.style.display = 'block';
+  }
+  // Persist session so refresh keeps you logged in
+  if (state.currentUser) {
+    try { localStorage.setItem('sbl_active_session_v1', state.currentUser); } catch (e) {}
+  }
+  save();
   ensureSchoolCalendar();
   applyA11yModes();
   renderAll();
   initSessionNotifications();
   scheduleSessionNotifications();
-  if (firebaseReady && auth.currentUser) cloudSaveUserData();
+  // Use Firebase auth global — do NOT shadow it with a DOM variable named auth
+  if (firebaseReady && typeof auth !== 'undefined' && auth && auth.currentUser) {
+    try { cloudSaveUserData(); } catch (e) {}
+  }
 }
 
 // ---------- Navigation ----------
@@ -7085,12 +7097,25 @@ applyA11yModes();
   if (h && src) h.src = src;
 })();
 
-document.querySelectorAll('#avatar-options .avatar').forEach(el => {
-  const a = el.dataset.avatar;
-  if (a) el.style.background = avatarBg(a);
-});
+// Safe starter-avatar style (must not throw — or session restore never runs)
+try {
+  document.querySelectorAll('#avatar-options .avatar').forEach(el => {
+    el.style.background = (typeof avatarBgColorById === 'function') ? avatarBgColorById('gray') : '#E0E0E0';
+  });
+} catch (e) {}
+
+// Restore session from backup if currentUser missing (refresh must NOT log out)
+try {
+  const backup = localStorage.getItem('sbl_active_session_v1');
+  if (backup && (!state.currentUser || !state.users[state.currentUser])) {
+    const email = backup.toLowerCase();
+    if (state.users[email]) state.currentUser = email;
+  }
+} catch (e) {}
+
 const hadLocalSession = !!(state.currentUser && state.users[state.currentUser]);
 if (hadLocalSession) {
+  try { localStorage.setItem('sbl_active_session_v1', state.currentUser); } catch (e) {}
   const authScreen = document.getElementById('auth-screen');
   const appScreen = document.getElementById('app-screen');
   authScreen.classList.remove('active');
@@ -7111,15 +7136,16 @@ if (hadLocalSession) {
 // Wait for Firebase, then attach auth listener (fixes blank accounts on other devices)
 try {
   await initFirebaseSafe();
+  if (typeof bindAuthStateListener === 'function') bindAuthStateListener();
   if (hadLocalSession && firebaseReady && auth && auth.currentUser) {
     // Already signed in to Firebase — merge without wiping rich local
     try { await cloudLoadUserData(); save(); renderAll(); } catch (e) {}
   } else if (hadLocalSession && firebaseReady && auth && !auth.currentUser && state.users[state.currentUser]?.password) {
-    // Try silent cloud sign-in to enable sync
+    // Try silent cloud sign-in to enable sync — stay logged in locally either way
     try {
       _skipNextCloudLoad = plannerRichness(state) >= 8;
       await auth.signInWithEmailAndPassword(state.currentUser, state.users[state.currentUser].password);
-    } catch (e) { /* stay local */ }
+    } catch (e) { /* stay local — do NOT clear session */ }
   }
 } catch (e) { console.warn('boot firebase', e); }
 })();
